@@ -1,42 +1,62 @@
 package org.faya.sensei;
 
-/**
- * The Node interface represents a node in a graph. It provides methods to get the position of the node,
- * get the cost associated with the node, and set the cost of the node.
- */
 public interface INode {
-    /**
-     * Returns the position of the node as an array of integers.
-     *
-     * @return An array of integers representing the position of the node.
-     */
-    float[] getPosition();
 
     /**
-     * Returns the cost associated with the node.
+     * Retrieves the position of the node.
      *
-     * @return The cost of the node as a double.
+     * @return the position of the node as a float array
      */
-    double getCost();
+    double[] getPosition();
 
     /**
-     * Sets the cost associated with the node.
+     * Retrieves the G cost of the node.
      *
-     * @param cost The cost to be set for the node.
+     * @return the G cost of the node
      */
-    void setCost(double cost);
+    double getGCost();
 
     /**
-     * Returns the parent node of this node.
+     * Sets the G cost of the node.
      *
-     * @return The parent node of this node.
+     * @param gCost the G cost to be set
+     */
+    void setGCost(double gCost);
+
+    /**
+     * Retrieves the H cost of the node.
+     *
+     * @return the H cost of the node
+     */
+    double getHCost();
+
+    /**
+     * Sets the H cost of the node.
+     *
+     * @param hCost the H cost to be set
+     */
+    void setHCost(double hCost);
+
+
+    /**
+     * Retrieves the F cost of the node, typically calculated as the sum of G
+     * cost and H cost.
+     *
+     * @return the F cost of the node
+     */
+    double getFCost();
+
+    /**
+     * Retrieves the parent node of this node.
+     *
+     * @return the parent node, or null if this node has no parent
      */
     INode getParent();
 
     /**
      * Sets the parent node of this node.
      *
-     * @param parent The parent node of this node.
+     * @param parent the parent node to be set
      */
     void setParent(INode parent);
 }

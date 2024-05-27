@@ -2,25 +2,22 @@ package org.faya.sensei;
 
 import java.util.List;
 
-/**
- * The Graph interface represents a graph structure. It provides methods to get the neighbors of a node
- * and to get the cost between two nodes.
- */
 public interface IGraph {
-    /**
-     * Returns a list of neighboring nodes for a given node.
-     *
-     * @param node The node for which to get the neighbors.
-     * @return A list of Node objects representing the neighbors of the given node.
-     */
-    List<INode> getNeighbors(INode node);
 
     /**
-     * Returns the cost of moving from one node to another.
+     * Retrieves a node based on its position in the graph.
      *
-     * @param from The starting node.
-     * @param to The target node.
-     * @return The cost as a double of moving from the `from` node to the `to` node.
+     * @param position the position of the node, typically represented as an
+     *                array of coordinates
+     * @return the node at the specified position
      */
-    double getCost(INode from, INode to);
+    INode getNode(double[] position);
+
+    /**
+     * Retrieves the neighbors of a given node.
+     *
+     * @param node the node for which neighbors are to be found
+     * @return a list of neighboring nodes
+     */
+    List<INode> getNeighbors(INode node);
 }
