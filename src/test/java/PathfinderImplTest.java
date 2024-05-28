@@ -1,7 +1,4 @@
-import org.faya.sensei.IGraph;
-import org.faya.sensei.IHeuristic;
-import org.faya.sensei.INode;
-import org.faya.sensei.IPathfinder;
+import org.faya.sensei.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -312,5 +310,57 @@ public class PathfinderImplTest {
         List<INode> actualPath = pathfinder.findPath(start, goal);
 
         assertArrayEquals(expectedPath.toArray(), actualPath.toArray());
+    }
+
+    @Test
+    public void testRegisterObserver() throws Exception {
+        INode start = graph.getNode(new double[]{0, 0});
+        INode goal = graph.getNode(new double[]{4, 4});
+
+        List<INode> collectedPath = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(1);
+
+        pathfinder.registerObserver(new IPathfinderObserver() {
+
+            @Override
+            public void onNode(INode node) {
+                collectedPath.add(node);
+            }
+
+            @Override
+            public void onPathFound(List<INode> path) {
+                latch.countDown();
+            }
+        });
+
+        List<INode> expectedPath = List.of(
+                graph.getNode(new double[] {0, 0}),
+                graph.getNode(new double[] {1, 0}),
+                graph.getNode(new double[] {0, 1}),
+                graph.getNode(new double[] {1, 1}),
+                graph.getNode(new double[] {0, 2}),
+                graph.getNode(new double[] {2, 0}),
+                graph.getNode(new double[] {1, 2}),
+                graph.getNode(new double[] {2, 1}),
+                graph.getNode(new double[] {2, 2}),
+                graph.getNode(new double[] {0, 3}),
+                graph.getNode(new double[] {3, 0}),
+                graph.getNode(new double[] {3, 1}),
+                graph.getNode(new double[] {1, 3}),
+                graph.getNode(new double[] {3, 2}),
+                graph.getNode(new double[] {2, 3}),
+                graph.getNode(new double[] {3, 3}),
+                graph.getNode(new double[] {2, 4}),
+                graph.getNode(new double[] {3, 4}),
+                graph.getNode(new double[] {4, 3})
+        );
+
+        pathfinder.findPath(start, goal);
+
+        latch.await();
+
+        assertEquals(0, latch.getCount());
+
+        assertArrayEquals(expectedPath.toArray(), collectedPath.toArray());
     }
 }
