@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -357,7 +358,7 @@ public class PathfinderImplTest {
 
         pathfinder.findPath(start, goal);
 
-        latch.await();
+        assertTrue(latch.await(3, TimeUnit.SECONDS));
 
         assertEquals(0, latch.getCount());
 
