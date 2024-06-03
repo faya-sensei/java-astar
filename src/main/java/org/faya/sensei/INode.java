@@ -5,7 +5,7 @@ public interface INode {
     /**
      * Retrieves the position of the node.
      *
-     * @return the position of the node as a float array
+     * @return the position of the node as a double array
      */
     double[] getPosition();
 
@@ -21,7 +21,7 @@ public interface INode {
      *
      * @param gCost the G cost to be set
      */
-    void setGCost(double gCost);
+    void setGCost(final double gCost);
 
     /**
      * Retrieves the heuristic cost estimate from the current node to the target
@@ -36,7 +36,7 @@ public interface INode {
      *
      * @param hCost the H cost to be set
      */
-    void setHCost(double hCost);
+    void setHCost(final double hCost);
 
     /**
      * Retrieves the F cost of the node, is used to determine the priority of
@@ -58,13 +58,13 @@ public interface INode {
      *
      * @param parent the parent node to be set
      */
-    void setParent(INode parent);
+    void setParent(final INode parent);
 
     abstract class Decorator implements INode {
 
         protected final INode decoratedNode;
 
-        public Decorator(INode decoratedNode) {
+        public Decorator(final INode decoratedNode) {
             this.decoratedNode = decoratedNode;
         }
 
@@ -79,7 +79,7 @@ public interface INode {
         }
 
         @Override
-        public void setGCost(double gCost) {
+        public void setGCost(final double gCost) {
             decoratedNode.setGCost(gCost);
         }
 
@@ -89,7 +89,7 @@ public interface INode {
         }
 
         @Override
-        public void setHCost(double hCost) {
+        public void setHCost(final double hCost) {
             decoratedNode.setHCost(hCost);
         }
 
@@ -104,12 +104,12 @@ public interface INode {
         }
 
         @Override
-        public void setParent(INode parent) {
+        public void setParent(final INode parent) {
             decoratedNode.setParent(parent);
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (this == obj) return true;
             if (obj == null || getClass() != obj.getClass()) return false;
             return decoratedNode.equals(((Decorator) obj).decoratedNode);

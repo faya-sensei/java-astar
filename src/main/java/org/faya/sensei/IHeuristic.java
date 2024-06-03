@@ -9,5 +9,5 @@ public interface IHeuristic {
      * @param goal the goal node
      * @return the calculated heuristic cost
      */
-    double calculate(INode start, INode goal);
+    double calculate(final INode start, final INode goal);
 }

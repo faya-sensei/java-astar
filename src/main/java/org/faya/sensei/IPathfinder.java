@@ -12,12 +12,12 @@ public interface IPathfinder {
      * @param goal the goal node
      * @return a list of nodes representing the path from start to goal
      */
-    List<INode> findPath(INode start, INode goal);
+    List<INode> findPath(final INode start, final INode goal);
 
     /**
      * Registers an observer to receive pathfinding events.
      *
      * @param observer the observer to be registered
      */
-    void registerObserver(IPathfinderObserver observer);
+    void registerObserver(final IPathfinderObserver observer);
 }

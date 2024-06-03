@@ -1,23 +1,104 @@
 import org.faya.sensei.IGraph;
+import org.faya.sensei.IGraphBuilder;
 import org.faya.sensei.INode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.lwjgl.assimp.AIMesh;
+import org.lwjgl.assimp.AIScene;
+import org.lwjgl.assimp.Assimp;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GraphImplTest {
+
+    @Nested
+    public class GraphBuilderTest {
+
+        private static Class<? extends IGraphBuilder> graphBuilderClass;
+
+        private IGraphBuilder graphBuilder;
+
+        @BeforeAll
+        public static void prepare() {
+            final String packageName = "org.faya.sensei";
+
+            final Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .setUrls(ClasspathHelper.forPackage(packageName))
+                    .setScanners(Scanners.SubTypes));
+
+            final Set<Class<? extends IGraphBuilder>> graphBuilderClasses = reflections.getSubTypesOf(IGraphBuilder.class);
+
+            graphBuilderClass = graphBuilderClasses.iterator().next();
+        }
+
+        @BeforeEach
+        public void setUp() throws Exception {
+            Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
+
+            assertNotNull(constructor);
+
+            graphBuilder = constructor.newInstance();
+
+            assertNotNull(graphBuilder);
+        }
+
+        @Test
+        public void testBuildGrid2DGraph() {
+            IGraph graph = graphBuilder.build(5, 5);
+
+            assertNotNull(graph);
+        }
+
+        @Test
+        public void testBuildGrid3DGraph() {
+            IGraph graph = graphBuilder.build(5, 5, 5);
+
+            assertNotNull(graph);
+        }
+
+        @Test
+        public void testBuildMeshGraph() throws IOException {
+            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("navmesh.glb")) {
+                assertNotNull(inputStream);
+
+                Path tempFile = Files.createTempFile("tempMesh", ".gltf");
+                Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+                try (AIScene scene = Assimp.aiImportFile(tempFile.toString(),
+                        Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate)) {
+                    assertNotNull(scene);
+
+                    try (AIMesh mesh = AIMesh.create(Objects.requireNonNull(scene.mMeshes()).get(0))) {
+                        IGraph graph = graphBuilder.build(mesh);
+
+                        assertNotNull(graph);
+                    }
+                } finally {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+        }
+    }
 
     @Nested
     public class TwoDimensionalGridGraphTest {
