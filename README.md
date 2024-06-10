@@ -82,18 +82,17 @@ distance can better calculate Euclidean based graphs.
 
 #### Procedural:
 
-1. **Implement Manhattan heuristic**: The manhattan distance between two points
-$x$ and $y$ is $|x_1 - x_2| + |y_1 - y_2|$.
+1. **Implement Manhattan heuristic**: The Manhattan distance between two points
+$x$ and $y$ is $$d(x, y) = |x_1 - x_2| + |y_1 - y_2|$$.
 
-2. **Implement Euclidean heuristic**: The euclidean distance between two points
-$d(x, y) = \sqrt {(x_1 - y_2)^2 + (y_1 - y_2)^2}$
+2. **Implement Euclidean heuristic**: The Euclidean distance between two points
+$$d(x, y) = \sqrt {(x_1 - y_2)^2 + (y_1 - y_2)^2}$$
 
 ### 4. Pathfinder and observer
 
 #### Instruction:
 
-The A* algorithm description refer to wiki:
-[A* search algorithm Description](https://en.wikipedia.org/wiki/A*_search_algorithm#Description)
+The A* algorithm description refer to [wiki](https://en.wikipedia.org/wiki/A*_search_algorithm#Description)
 which can be summarized to the following pseudocode:
 
 ```
@@ -140,3 +139,13 @@ using the Bridge Pattern. Additionally, we can apply the Observer Pattern,
 enabling observers to record and monitor the process by extending the algorithm.
 
 #### Procedural:
+
+1. **Implement pathfinder**: Implement `IPathfinder` interface and consider
+PriorityQueue $O(n^2)$ or TreeSet $O(log_n)$to achieve filtering and sorting,
+mark it as abstract and build interface for the subclass.
+
+2. **Implement pathfinder subject**: Implement the subclass of pathfinder
+serve as concrete subject for observer.
+
+3. **Check observer can register into pathfinder subject**: Implement
+`IPathfinderObserver` interface and try call register observer in pathfinder.
