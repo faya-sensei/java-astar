@@ -12,9 +12,9 @@ public interface IPathfinderObserver {
     void onNode(final INode node);
 
     /**
-     * Called when a path is found.
+     * Called when a path is found or failure.
      *
-     * @param path the list of nodes representing the found path
+     * @param path the list of nodes representing the found path or empty
      */
-    void onPathFound(final List<INode> path);
+    void onFinish(final List<INode> path);
 }

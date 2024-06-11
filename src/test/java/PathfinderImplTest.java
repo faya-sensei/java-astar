@@ -8,6 +8,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PathfinderImplTest {
 
-    private static Class<? extends IPathfinder> pathFinderClass;
+    private static Class<? extends IPathfinder> pathfinderClass;
 
     private IGraph graph;
 
@@ -118,16 +119,24 @@ public class PathfinderImplTest {
                 .setUrls(ClasspathHelper.forPackage(packageName))
                 .setScanners(Scanners.SubTypes));
 
-        final Set<Class<? extends IPathfinder>> pathfinderClasses = reflections.getSubTypesOf(IPathfinder.class);
+        final Set<Class<? extends IPathfinder>> pathfinderBaseClasses = reflections.getSubTypesOf(IPathfinder.class);
 
-        assertFalse(pathfinderClasses.isEmpty(), "No implementations found for IPathfinder interface");
+        assertFalse(pathfinderBaseClasses.isEmpty(), "No implementations found for IPathfinder interface");
 
-        pathFinderClass = pathfinderClasses.iterator().next();
+        final Class<? extends IPathfinder> pathFinderBaseClass = pathfinderBaseClasses.iterator().next();
+
+        assertTrue(Modifier.isAbstract(pathFinderBaseClass.getModifiers()), "Path finder base class should be abstract");
+
+        final var pathfinderClasses = reflections.getSubTypesOf(pathFinderBaseClass);
+
+        assertFalse(pathfinderBaseClasses.isEmpty(), "No extends found for abstract of IPathfinder interface");
+
+        pathfinderClass = pathfinderClasses.iterator().next();
     }
 
     @BeforeEach
     public void setUp() throws Exception {
-        final Constructor<? extends IPathfinder> constructor = pathFinderClass.getConstructor(IGraph.class, IHeuristic.class);
+        final Constructor<? extends IPathfinder> constructor = pathfinderClass.getConstructor(IGraph.class, IHeuristic.class);
 
         assertNotNull(constructor);
 
@@ -292,11 +301,11 @@ public class PathfinderImplTest {
         INode start = graph.getNode(new double[]{0, 0});
         INode goal = graph.getNode(new double[]{4, 4});
 
-        // • • X P G
-        // X • • P X
-        // • • X P •
-        // X P P P X
-        // S P X • •
+        // • • • • •
+        // • • • • •
+        // • • • • •
+        // X X • • •
+        // S X • • •
 
         double[][] obstacles = {
                 {0, 1}, {1, 0}, {1, 1}
@@ -329,7 +338,7 @@ public class PathfinderImplTest {
             }
 
             @Override
-            public void onPathFound(List<INode> path) {
+            public void onFinish(List<INode> path) {
                 latch.countDown();
             }
         });

@@ -20,4 +20,18 @@ public interface IPathfinder {
      * @param observer the observer to be registered
      */
     void registerObserver(final IPathfinderObserver observer);
+
+    /**
+     * On search node callback, trigger when access to a node.
+     *
+     * @param node The access node.
+     */
+    void onNode(final INode node);
+
+    /**
+     * On search finish callback, trigger when search success or failure.
+     *
+     * @param path The path of this search.
+     */
+    void onFinish(final List<INode> path);
 }

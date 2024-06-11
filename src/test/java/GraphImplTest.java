@@ -103,7 +103,7 @@ public class GraphImplTest {
     @Nested
     public class TwoDimensionalGridGraphTest {
 
-        private static Class<? extends IGraph> graphClass;
+        private static Class<? extends IGraphBuilder> graphBuilderClass;
 
         private IGraph graph;
 
@@ -114,6 +114,8 @@ public class GraphImplTest {
             final Reflections reflections = new Reflections(new ConfigurationBuilder()
                     .setUrls(ClasspathHelper.forPackage(packageName))
                     .setScanners(Scanners.SubTypes));
+
+            final Set<Class<? extends IGraphBuilder>> graphBuilderClasses = reflections.getSubTypesOf(IGraphBuilder.class);
 
             final Set<Class<? extends IGraph>> graphClasses = reflections.getSubTypesOf(IGraph.class);
 
@@ -137,18 +139,20 @@ public class GraphImplTest {
 
             assertTrue(graph.isPresent(), "No suitable IGraph 2D implementation found");
 
-            graphClass = graph.get();
+            graphBuilderClass = graphBuilderClasses.iterator().next();
         }
 
         @BeforeEach
         public void setUp() throws Exception {
-            Constructor<? extends IGraph> constructor = graphClass.getConstructor(int.class, int.class);
+            Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
 
             assertNotNull(constructor);
 
-            graph = constructor.newInstance(5, 5);
+            var graphBuilder = constructor.newInstance();
 
-            assertNotNull(graph);
+            assertNotNull(graphBuilder);
+
+            graph = graphBuilder.build(5, 5);
         }
 
         @Test
@@ -211,7 +215,7 @@ public class GraphImplTest {
     @Nested
     public class ThreeDimensionalGridGraphTest {
 
-        private static Class<? extends IGraph> graphClass;
+        private static Class<? extends IGraphBuilder> graphBuilderClass;
 
         private IGraph graph;
 
@@ -222,6 +226,8 @@ public class GraphImplTest {
             final Reflections reflections = new Reflections(new ConfigurationBuilder()
                     .setUrls(ClasspathHelper.forPackage(packageName))
                     .setScanners(Scanners.SubTypes));
+
+            final Set<Class<? extends IGraphBuilder>> graphBuilderClasses = reflections.getSubTypesOf(IGraphBuilder.class);
 
             final Set<Class<? extends IGraph>> graphClasses = reflections.getSubTypesOf(IGraph.class);
 
@@ -247,18 +253,20 @@ public class GraphImplTest {
 
             assertTrue(graph.isPresent(), "No suitable IGraph 3D implementation found");
 
-            graphClass = graph.get();
+            graphBuilderClass = graphBuilderClasses.iterator().next();
         }
 
         @BeforeEach
         public void setUp() throws Exception {
-            final Constructor<? extends IGraph> constructor = graphClass.getConstructor(int.class, int.class, int.class);
+            Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
 
             assertNotNull(constructor);
 
-            graph = constructor.newInstance(5, 5, 5);
+            var graphBuilder = constructor.newInstance();
 
-            assertNotNull(graph);
+            assertNotNull(graphBuilder);
+
+            graph = graphBuilder.build(5, 5, 5);
         }
 
         @Test
