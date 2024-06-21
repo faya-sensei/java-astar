@@ -17,15 +17,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,7 +48,7 @@ public class GraphImplTest {
 
         @BeforeEach
         public void setUp() throws Exception {
-            Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
+            final Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
 
             assertNotNull(constructor);
 
@@ -64,32 +59,32 @@ public class GraphImplTest {
 
         @Test
         public void testBuildGrid2DGraph() {
-            IGraph graph = graphBuilder.build(5, 5);
+            final IGraph graph = graphBuilder.build(5, 5);
 
             assertNotNull(graph);
         }
 
         @Test
         public void testBuildGrid3DGraph() {
-            IGraph graph = graphBuilder.build(5, 5, 5);
+            final IGraph graph = graphBuilder.build(5, 5, 5);
 
             assertNotNull(graph);
         }
 
         @Test
         public void testBuildMeshGraph() throws IOException {
-            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("navmesh.glb")) {
+            try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("plane.glb")) {
                 assertNotNull(inputStream);
 
-                Path tempFile = Files.createTempFile("tempMesh", ".gltf");
+                final Path tempFile = Files.createTempFile("tempPlane", ".gltf");
                 Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-                try (AIScene scene = Assimp.aiImportFile(tempFile.toString(),
+                try (final AIScene scene = Assimp.aiImportFile(tempFile.toString(),
                         Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate)) {
                     assertNotNull(scene);
 
-                    try (AIMesh mesh = AIMesh.create(Objects.requireNonNull(scene.mMeshes()).get(0))) {
-                        IGraph graph = graphBuilder.build(mesh);
+                    try (final AIMesh mesh = AIMesh.create(Objects.requireNonNull(scene.mMeshes()).get(0))) {
+                        final IGraph graph = graphBuilder.build(mesh);
 
                         assertNotNull(graph);
                     }
@@ -144,11 +139,11 @@ public class GraphImplTest {
 
         @BeforeEach
         public void setUp() throws Exception {
-            Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
+            final Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
 
             assertNotNull(constructor);
 
-            var graphBuilder = constructor.newInstance();
+            final IGraphBuilder graphBuilder = constructor.newInstance();
 
             assertNotNull(graphBuilder);
 
@@ -167,22 +162,22 @@ public class GraphImplTest {
         public void testGetNode_OutOfBounds() {
             assertAll(
                     () -> {
-                        INode node = graph.getNode(new double[]{-1, 2});
+                        final INode node = graph.getNode(new double[]{-1, 2});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{2, -1});
+                        final INode node = graph.getNode(new double[]{2, -1});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{5, 2});
+                        final INode node = graph.getNode(new double[]{5, 2});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{2, 5});
+                        final INode node = graph.getNode(new double[]{2, 5});
 
                         assertNull(node);
                     }
@@ -190,9 +185,9 @@ public class GraphImplTest {
         }
 
         @Test
-        public void testGraphNeighbors() {
+        public void testGetNeighbors() {
             final INode node = graph.getNode(new double[]{2, 2});
-            List<INode> neighbors = graph.getNeighbors(node);
+            final List<INode> neighbors = graph.getNeighbors(node);
 
             assertEquals(4, neighbors.size());
             assertTrue(neighbors.contains(graph.getNode(new double[]{1, 2})));
@@ -203,8 +198,8 @@ public class GraphImplTest {
 
         @Test
         public void testGetNeighbors_EdgeCase() {
-            INode node = graph.getNode(new double[]{0, 0});
-            List<INode> neighbors = graph.getNeighbors(node);
+            final INode node = graph.getNode(new double[]{0, 0});
+            final List<INode> neighbors = graph.getNeighbors(node);
 
             assertEquals(2, neighbors.size());
             assertTrue(neighbors.contains(graph.getNode(new double[]{1, 0})));
@@ -258,11 +253,11 @@ public class GraphImplTest {
 
         @BeforeEach
         public void setUp() throws Exception {
-            Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
+            final Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
 
             assertNotNull(constructor);
 
-            var graphBuilder = constructor.newInstance();
+            final IGraphBuilder graphBuilder = constructor.newInstance();
 
             assertNotNull(graphBuilder);
 
@@ -280,32 +275,32 @@ public class GraphImplTest {
         public void testGetNode_OutOfBounds() {
             assertAll(
                     () -> {
-                        INode node = graph.getNode(new double[]{-1, 2, 2});
+                        final INode node = graph.getNode(new double[]{-1, 2, 2});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{2, -1, 2});
+                        final INode node = graph.getNode(new double[]{2, -1, 2});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{2, 2, -1});
+                        final INode node = graph.getNode(new double[]{2, 2, -1});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{5, 2, 2});
+                        final INode node = graph.getNode(new double[]{5, 2, 2});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{2, 5, 2});
+                        final INode node = graph.getNode(new double[]{2, 5, 2});
 
                         assertNull(node);
                     },
                     () -> {
-                        INode node = graph.getNode(new double[]{2, 2, 5});
+                        final INode node = graph.getNode(new double[]{2, 2, 5});
 
                         assertNull(node);
                     }
@@ -313,9 +308,9 @@ public class GraphImplTest {
         }
 
         @Test
-        public void testGraphNeighbors() {
+        public void testGetNeighbors() {
             final INode node = graph.getNode(new double[]{2, 2, 2});
-            List<INode> neighbors = graph.getNeighbors(node);
+            final List<INode> neighbors = graph.getNeighbors(node);
 
             assertEquals(6, neighbors.size());
             assertTrue(neighbors.contains(graph.getNode(new double[]{1, 2, 2})));
@@ -328,13 +323,114 @@ public class GraphImplTest {
 
         @Test
         public void testGetNeighbors_EdgeCase() {
-            INode node = graph.getNode(new double[]{0, 0, 0});
-            List<INode> neighbors = graph.getNeighbors(node);
+            final INode node = graph.getNode(new double[]{0, 0, 0});
+            final List<INode> neighbors = graph.getNeighbors(node);
 
             assertEquals(3, neighbors.size());
             assertTrue(neighbors.contains(graph.getNode(new double[]{1, 0, 0})));
             assertTrue(neighbors.contains(graph.getNode(new double[]{0, 1, 0})));
             assertTrue(neighbors.contains(graph.getNode(new double[]{0, 0, 1})));
+        }
+    }
+
+    @Nested
+    public class MeshGraphTest {
+
+        private static Class<? extends IGraphBuilder> graphBuilderClass;
+
+        private IGraph graph;
+
+        @BeforeAll
+        public static void prepare() {
+            final String packageName = "org.faya.sensei";
+
+            final Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .setUrls(ClasspathHelper.forPackage(packageName))
+                    .setScanners(Scanners.SubTypes));
+
+            final Set<Class<? extends IGraphBuilder>> graphBuilderClasses = reflections.getSubTypesOf(IGraphBuilder.class);
+
+            final Set<Class<? extends IGraph>> graphClasses = reflections.getSubTypesOf(IGraph.class);
+
+            assertFalse(graphClasses.isEmpty(), "No implementations found for IGraph interface");
+
+            final Optional<Class<? extends IGraph>> graph = graphClasses.stream()
+                    .filter(clazz -> {
+                        for (final Field field : clazz.getDeclaredFields()) {
+                            if (Map.class.isAssignableFrom(field.getType())) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    })
+                    .findFirst();
+
+            assertTrue(graph.isPresent(), "No suitable IGraph mesh implementation found");
+
+            graphBuilderClass = graphBuilderClasses.iterator().next();
+        }
+
+        @BeforeEach
+        public void setUp() throws Exception {
+            final Constructor<? extends IGraphBuilder> constructor = graphBuilderClass.getConstructor();
+
+            assertNotNull(constructor);
+
+            final IGraphBuilder graphBuilder = constructor.newInstance();
+
+            assertNotNull(graphBuilder);
+
+            try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("plane.glb")) {
+                assertNotNull(inputStream);
+
+                final Path tempFile = Files.createTempFile("tempPlane", ".gltf");
+                Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+                try (final AIScene scene = Assimp.aiImportFile(tempFile.toString(),
+                        Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate)) {
+                    assertNotNull(scene);
+
+                    try (final AIMesh mesh = AIMesh.create(Objects.requireNonNull(scene.mMeshes()).get(0))) {
+                        graph = graphBuilder.build(mesh);
+
+                        assertNotNull(graph);
+                    }
+                } finally {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+        }
+
+        @Test
+        public void testGetNode() {
+            final INode node = graph.getNode(0);
+
+            assertArrayEquals(new double[]{0, 0, 0.5}, node.getPosition(), 1e-6);
+        }
+
+        @Test
+        public void testGetNode_OutOfBounds() {
+            assertAll(
+                    () -> {
+                        final INode node = graph.getNode(26);
+
+                        assertNull(node);
+                    },
+                    () -> {
+                        final INode node = graph.getNode(-1);
+
+                        assertNull(node);
+                    }
+            );
+        }
+
+        @Test
+        public void testGetNeighbors() {
+            final INode node = graph.getNode(0);
+            final List<INode> neighbors = graph.getNeighbors(node);
+
+            assertEquals(12, neighbors.size());
         }
     }
 }

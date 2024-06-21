@@ -1,4 +1,3 @@
-import org.faya.sensei.IGraph;
 import org.faya.sensei.INode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

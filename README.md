@@ -8,9 +8,9 @@ Another old school java exercise
 
 # Overview
 
-A* algorithm, as a fundamental programming algorithm, not only helps in
-practicing iteration and fostering programming thinking but is also a practical
-algorithm widely used in real-world applications.
+The A* algorithm is a fundamental programming algorithm that aids in practicing
+iteration and fostering programming thinking. It is also a practical algorithm
+widely used in real-world applications.
 
 # Task Checklist
 
@@ -27,11 +27,11 @@ object without altering its structure.
 
 #### Procedural:
 
-1. **Implement INode interface**: The interface defines the getter setter
-structure, attempt to find the best match of the private field.
+1. **Implement node interface**: The `INode` interface defines the getter and
+   setter structure, attempt to find the best match of the private field.
 
-2. **Extend accessible decorator**: We need an accessible decorator to describe
-the accessibility of the node in a grid. 
+2. **Extend accessible decorator**: Create an accessible decorator to describe
+   the accessibility of the node in a grid. 
 
 #### Requirement:
 
@@ -55,12 +55,12 @@ instance.
 #### Procedural:
 
 1. **Implement grid graph by multidimensional array**: Due to the
-standardization of the grid, arrays can be directly used for operations. Design
-a grid 2d graph and a grid 3d graph with two or three-dimensional array and
-implement the `IGraph` interface.
+   standardization of the grid, arrays can be directly used for operations.
+   Design a grid 2d graph and a grid 3d graph with two or three-dimensional
+   array and implement the `IGraph` interface.
 
 2. **Implement grid graph builder**: Implement `IGraphBuilder` interface and
-finalize the related build function.
+   finalize the related build function.
 
    ```java
    IGraph build(final int width, final int height);
@@ -83,10 +83,15 @@ distance can better calculate Euclidean based graphs.
 #### Procedural:
 
 1. **Implement Manhattan heuristic**: The Manhattan distance between two points
-$x$ and $y$ is $$d(x, y) = |x_1 - x_2| + |y_1 - y_2|$$.
+   $x$ and $y$ is $d(x, y) = |x_1 - x_2| + |y_1 - y_2|$
 
 2. **Implement Euclidean heuristic**: The Euclidean distance between two points
-$$d(x, y) = \sqrt {(x_1 - y_2)^2 + (y_1 - y_2)^2}$$
+   is $d(x, y) = \sqrt {(x_1 - y_2)^2 + (y_1 - y_2)^2}$ or
+   $d(x, y, z) = \sqrt {(x_1 - y_2)^2 + (y_1 - y_2)^2 + (z_1 - z_2)^2}$
+
+#### Requirement:
+
+At least one or more classes inherited the `IHeuristic` interface.
 
 ### 4. Pathfinder and observer
 
@@ -141,11 +146,27 @@ enabling observers to record and monitor the process by extending the algorithm.
 #### Procedural:
 
 1. **Implement pathfinder**: Implement `IPathfinder` interface and consider
-PriorityQueue $O(n^2)$ or TreeSet $O(log_n)$to achieve filtering and sorting,
-mark it as abstract and build interface for the subclass.
+   PriorityQueue $O(n^2)$ or TreeSet $O(log_n)$to achieve filtering and sorting,
+   mark it as abstract and build interface for the subclass.
 
 2. **Implement pathfinder subject**: Implement the subclass of pathfinder
-serve as concrete subject for observer.
+   serve as concrete subject for observer.
 
 3. **Check observer can register into pathfinder subject**: Implement
-`IPathfinderObserver` interface and try call register observer in pathfinder.
+   `IPathfinderObserver` interface and try call register observer in pathfinder.
+
+### 5. Mesh graph and Euclidean Heuristic
+
+#### Instruction:
+
+After completing the prototype, it's time to develop a more optimized and
+efficient version. Instead of using a grid search, which can be computationally
+expensive, a navigation mesh (navmesh) is a more effective alternative. We will
+use a simple graph structure based on an adjacency list to represent this
+navigation mesh.
+
+#### Procedural:
+
+1. **Implement mesh graph**: Store the index of the mesh as a node, and use
+   indices as edges to construct the graph. Consider using an uuid or unique id
+   to facilitate queries on node collections.
