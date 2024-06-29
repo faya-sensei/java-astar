@@ -27,14 +27,14 @@ public class InputSystem {
         return instance;
     }
 
-    public void init(final long window) {
-        glfwSetKeyCallback(window, (handle, key, scancode, action, mods) -> {
+    public void init(final Window window) {
+        glfwSetKeyCallback(window.getHandle(), (handle, key, scancode, action, mods) -> {
             notifyListeners(new KeyEvent(key, scancode, action, mods));
         });
-        glfwSetCursorPosCallback(window, (handle, xpos, ypos) -> {
+        glfwSetCursorPosCallback(window.getHandle(), (handle, xpos, ypos) -> {
             notifyListeners(new MouseEvent(xpos, ypos));
         });
-        glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window.getHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
     }
 
     public <T extends IEvent> void addEventListener(final Class<T> eventType, final Consumer<T> listener) {

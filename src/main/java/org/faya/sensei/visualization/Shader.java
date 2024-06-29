@@ -14,17 +14,24 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class Shader {
 
+    private final ShaderSystem shaderSystem = ShaderSystem.getInstance();
+    private final List<ShaderModuleData> shaderModuleDataList = new ArrayList<>();
     private final Map<String, Integer> uniforms = new HashMap<>();
-    private final int programId;
+
+    private int programId;
 
     public record ShaderModuleData(String shaderFile, int shaderType) { }
 
-    public Shader(final List<ShaderModuleData> shaderModuleList) {
+    public Shader(final List<ShaderModuleData> shaderModuleDataList) {
+        this.shaderModuleDataList.addAll(shaderModuleDataList);
+    }
+
+    public void setup() {
         programId = glCreateProgram();
         if (programId == 0) throw new RuntimeException("Could not create Shader.");
 
         final List<Integer> shaderModules = new ArrayList<>();
-        shaderModuleList.forEach(s -> {
+        shaderModuleDataList.forEach(s -> {
             try {
                 final int shader = createShader(loadShader(s.shaderFile), s.shaderType);
                 shaderModules.add(shader);
@@ -33,6 +40,9 @@ public class Shader {
             }
         });
 
+        shaderModules.forEach(s -> glAttachShader(programId, s));
+
+        glLinkProgram(programId);
         if (glGetProgrami(programId, GL_LINK_STATUS) == 0)
             throw new RuntimeException("Error linking Shader code: " + glGetProgramInfoLog(programId));
 
@@ -40,11 +50,13 @@ public class Shader {
         shaderModules.forEach(GL20::glDeleteShader);
     }
 
-    public void createUniform(final String uniformName) {
+    public void registerUniform(final String uniformName) {
         final int uniformLocation = glGetUniformLocation(programId, uniformName);
         if (uniformLocation < 0)
             throw new RuntimeException("Could not find uniform: " + uniformName + " in shader program:" + programId);
-        uniforms.put(uniformName, uniformLocation);
+        if (!shaderSystem.registerUniformLocation(programId, uniformName, uniformLocation)) {
+            uniforms.put(uniformName, uniformLocation);
+        }
     }
 
     public void setUniform(final String uniformName, final int value) {
@@ -55,31 +67,28 @@ public class Shader {
         glUniform1f(getUniformLocation(uniformName), value);
     }
 
-    public void setUniform(final String name, final Matrix4x4 m) {
-        glUniformMatrix4fv(uniforms.get(name), false, FloatBuffer.wrap(Matrix4x4.toFloatArray(m)));
+    public void setUniform(final String uniformName, final Matrix4x4 matrix) {
+        glUniformMatrix4fv(getUniformLocation(uniformName), false, FloatBuffer.wrap(Matrix4x4.toFloatArray(matrix)));
     }
 
-    public void bind() {
+    public void useProgram() {
         glUseProgram(programId);
     }
 
-    public void unbind() {
+    public void stopProgram() {
         glUseProgram(0);
     }
 
     public void dispose() {
-        unbind();
-
-        if (programId != 0) {
-            glDeleteProgram(programId);
-        }
+        stopProgram();
+        glDeleteProgram(programId);
     }
 
-    private String loadShader(final String fileName) throws IOException {
+    private String loadShader(final String shaderFile) throws IOException {
         final StringBuilder result = new StringBuilder();
 
-        try (final InputStream inputStream = getClass().getResourceAsStream(fileName);
-             final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream(shaderFile);
+             final BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line).append("\n");

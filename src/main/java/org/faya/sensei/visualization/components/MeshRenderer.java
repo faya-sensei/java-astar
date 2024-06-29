@@ -1,5 +1,6 @@
 package org.faya.sensei.visualization.components;
 
+import org.faya.sensei.visualization.Shader;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
@@ -10,16 +11,28 @@ import java.util.List;
 
 import static org.lwjgl.opengl.GL30.*;
 
-public class Mesh extends Component {
+public class MeshRenderer extends Component {
 
-    private final int numVertices;
-    private final int vaoId;
-    private final List<Integer> vboIdList;
+    private final Shader shader;
+    private int vaoId;
+    private List<Integer> vboIdList;
 
-    public Mesh(float[] positions, float[] uvs, int[] indices) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            numVertices = indices.length;
-            vboIdList = new ArrayList<>();
+    public MeshRenderer(Shader shader) {
+        this.shader = shader;
+    }
+
+    @Override
+    public void start() {
+        this.shader.setup();
+
+        final MeshFilter meshFilter = (MeshFilter) entity.getComponent(MeshFilter.class);
+
+        final float[] vertices = meshFilter.getVertices();
+        final float[] uvs = meshFilter.getUvs();
+        final int[] indices = meshFilter.getIndices();
+
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            this.vboIdList = new ArrayList<>();
 
             vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);
@@ -28,8 +41,8 @@ public class Mesh extends Component {
             {
                 final int vboId = glGenBuffers();
                 vboIdList.add(vboId);
-                final FloatBuffer positionsBuffer = stack.callocFloat(positions.length);
-                positionsBuffer.put(0, positions);
+                final FloatBuffer positionsBuffer = stack.callocFloat(vertices.length);
+                positionsBuffer.put(0, vertices);
                 glBindBuffer(GL_ARRAY_BUFFER, vboId);
                 glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
                 glEnableVertexAttribArray(0);
@@ -61,14 +74,6 @@ public class Mesh extends Component {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         }
-    }
-
-    public int getNumVertices() {
-        return numVertices;
-    }
-
-    public final int getVaoId() {
-        return vaoId;
     }
 
     @Override

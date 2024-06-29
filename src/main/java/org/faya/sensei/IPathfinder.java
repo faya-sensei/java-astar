@@ -26,12 +26,12 @@ public interface IPathfinder {
      *
      * @param node The access node.
      */
-    void onNode(final INode node);
+    void onNode(INode node);
 
     /**
      * On search finish callback, trigger when search success or failure.
      *
      * @param path The path of this search.
      */
-    void onFinish(final List<INode> path);
+    void onFinish(List<INode> path);
 }

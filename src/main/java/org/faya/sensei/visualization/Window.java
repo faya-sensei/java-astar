@@ -4,14 +4,17 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
     private final long handle;
+    private int width, height;
 
     public Window(final String title, final int width, final int height) {
+        this.width = width;
+        this.height = height;
+
         if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW.");
 
         glfwDefaultWindowHints();
@@ -23,17 +26,25 @@ public class Window {
 
         GLFWErrorCallback.createPrint(System.err).set();
 
+        glfwMakeContextCurrent(handle);
+        glfwSwapInterval(1);
         glfwShowWindow(handle);
+    }
 
-        InputSystem.getInstance().init(handle);
+    public long getHandle() {
+        return handle;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public void pollEvents() {
         glfwPollEvents();
-    }
-
-    public boolean isKeyPressed(int keyCode) {
-        return glfwGetKey(handle, keyCode) == GLFW_PRESS;
     }
 
     public boolean windowShouldClose() {
@@ -41,6 +52,7 @@ public class Window {
     }
 
     public void dispose() {
+        glfwSetWindowShouldClose(handle, true);
         glfwFreeCallbacks(handle);
         glfwDestroyWindow(handle);
         glfwTerminate();
