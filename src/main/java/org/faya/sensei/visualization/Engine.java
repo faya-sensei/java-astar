@@ -2,12 +2,14 @@ package org.faya.sensei.visualization;
 
 import org.faya.sensei.visualization.components.Camera;
 import org.faya.sensei.visualization.components.Component;
+import org.faya.sensei.visualization.components.MeshRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class Engine {
 
@@ -66,7 +68,12 @@ public class Engine {
 
             components.forEach(component -> component.update(deltaTime));
 
-            renderer.render();
+            renderer.render(
+                    scene.getComponents().stream()
+                            .filter(component -> component instanceof MeshRenderer)
+                            .map(component -> (MeshRenderer) component)
+                            .toList()
+            );
 
             initialTime = now;
         }

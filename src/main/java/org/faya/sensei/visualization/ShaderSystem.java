@@ -1,8 +1,8 @@
 package org.faya.sensei.visualization;
 
 import org.faya.sensei.mathematics.Matrix4x4;
+import org.lwjgl.system.MemoryStack;
 
-import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +58,9 @@ public class ShaderSystem {
         if (programLocations != null) {
             for (final Map.Entry<Integer, Integer> entry : programLocations.entrySet()) {
                 glUseProgram(entry.getKey());
-                glUniformMatrix4fv(entry.getValue(), false, FloatBuffer.wrap(Matrix4x4.toFloatArray(matrix)));
+                try (final MemoryStack stack = MemoryStack.stackPush()) {
+                    glUniformMatrix4fv(entry.getValue(), false, stack.floats(Matrix4x4.toFloatArray(matrix)));
+                }
             }
             glUseProgram(0);
         }

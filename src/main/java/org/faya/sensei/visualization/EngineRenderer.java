@@ -2,7 +2,10 @@ package org.faya.sensei.visualization;
 
 import org.faya.sensei.mathematics.Matrix4x4;
 import org.faya.sensei.visualization.components.Camera;
+import org.faya.sensei.visualization.components.MeshRenderer;
 import org.lwjgl.opengl.GL;
+
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -21,8 +24,8 @@ public class EngineRenderer {
     public EngineRenderer(final Window window) {
         this.window = window;
 
-        this.shader.registerGlobalUniform("projectionMatrix");
-        this.shader.registerGlobalUniform("viewMatrix");
+        shader.registerGlobalUniform("projectionMatrix");
+        shader.registerGlobalUniform("viewMatrix");
 
         updateProjectionMatrix();
 
@@ -34,13 +37,14 @@ public class EngineRenderer {
         this.camera = camera;
     }
 
-    public void render() {
-        System.out.println("Render");
+    public void render(List<MeshRenderer> renderer) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getWidth(), window.getHeight());
 
         shader.setUniform("projectionMatrix", projectionMatrix);
         shader.setUniform("viewMatrix", camera.getViewMatrix());
+
+        renderer.forEach(MeshRenderer::render);
     }
 
     public void updateProjectionMatrix() {

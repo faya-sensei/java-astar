@@ -1,5 +1,6 @@
 package org.faya.sensei.visualization.components;
 
+import org.faya.sensei.mathematics.Matrix4x4;
 import org.faya.sensei.visualization.Shader;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
@@ -14,6 +15,7 @@ import static org.lwjgl.opengl.GL30.*;
 public class MeshRenderer extends Component {
 
     private final Shader shader;
+    private MeshFilter mesh;
     private int vaoId;
     private List<Integer> vboIdList;
 
@@ -23,13 +25,17 @@ public class MeshRenderer extends Component {
 
     @Override
     public void start() {
-        this.shader.setup();
+        shader.setup();
 
-        final MeshFilter meshFilter = (MeshFilter) entity.getComponent(MeshFilter.class);
+        shader.registerUniform("projectionMatrix");
+        shader.registerUniform("modelMatrix");
+        shader.registerUniform("viewMatrix");
 
-        final float[] vertices = meshFilter.getVertices();
-        final float[] uvs = meshFilter.getUvs();
-        final int[] indices = meshFilter.getIndices();
+        mesh = (MeshFilter) entity.getComponent(MeshFilter.class);
+
+        final float[] vertices = mesh.getVertices();
+        final float[] uvs = mesh.getUvs();
+        final int[] indices = mesh.getIndices();
 
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             this.vboIdList = new ArrayList<>();
@@ -74,6 +80,24 @@ public class MeshRenderer extends Component {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         }
+    }
+
+    public void render() {
+        shader.useProgram();
+
+        final Transform transform = entity.getTransform();
+
+        shader.setUniform("modelMatrix", Matrix4x4.trs(
+                transform.getWorldPosition(),
+                transform.getWorldRotation(),
+                transform.getWorldScale()
+        ));
+
+        glBindVertexArray(vaoId);
+        glDrawElements(GL_TRIANGLES, mesh.getIndices().length, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        shader.stopProgram();
     }
 
     @Override

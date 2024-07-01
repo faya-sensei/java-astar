@@ -2,12 +2,12 @@ package org.faya.sensei.visualization;
 
 import org.faya.sensei.mathematics.Matrix4x4;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.FloatBuffer;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -68,7 +68,9 @@ public class Shader {
     }
 
     public void setUniform(final String uniformName, final Matrix4x4 matrix) {
-        glUniformMatrix4fv(getUniformLocation(uniformName), false, FloatBuffer.wrap(Matrix4x4.toFloatArray(matrix)));
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            glUniformMatrix4fv(getUniformLocation(uniformName), false, stack.floats(Matrix4x4.toFloatArray(matrix)));
+        }
     }
 
     public void useProgram() {
