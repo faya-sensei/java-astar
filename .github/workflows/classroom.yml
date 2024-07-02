@@ -1,0 +1,53 @@
+name: Autograding Tests
+
+on: 
+  push:
+    branches:
+    - 'master'
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'oracle'
+        java-version: '21'
+    - name: Test node implement
+      id: test-node-implement
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test node implement
+        command: gradle test --tests 'NodeImplTest'
+        timeout: 10
+    - name: Test graph implement
+      id: test-graph-implement
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test graph implement
+        command: gradle test --tests 'GraphImplTest'
+        timeout: 10
+    - name: Test pathfinder implement
+      id: test-pathfinder-implement
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test pathfinder implement
+        command: gradle test --tests 'PathfinderImplTest'
+        timeout: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST-NODE-IMPLEMENT_RESULTS: "${{steps.test-node-implement.outputs.result}}"
+        TEST-GRAPH-IMPLEMENT_RESULTS: "${{steps.test-graph-implement.outputs.result}}"
+        TEST-PATHFINDER-IMPLEMENT_RESULTS: "${{steps.test-pathfinder-implement.outputs.result}}"
+      with:
+        runners: test-node-implement,test-graph-implement,test-pathfinder-implement
