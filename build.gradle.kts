@@ -51,6 +51,8 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.10.+"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:5.12.+")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.12.+")
     testImplementation("org.reflections:reflections:0.10.+")
 }
 

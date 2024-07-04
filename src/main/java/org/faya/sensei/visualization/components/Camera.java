@@ -9,7 +9,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Camera extends Component {
 
-    private final InputSystem input = InputSystem.getInstance();
+    private final InputSystem inputSystem = InputSystem.getInstance();
     private final float lookSpeed = 0.05f;
     private final float moveSpeed = 1.0f;
 
@@ -23,8 +23,8 @@ public class Camera extends Component {
         transform.setLocalPosition(new Vector3(0.0f, 0.0f, 3.0f));
         transform.setLocalRotation(new Quaternion(0.0f, 0.0f, 0.0f, 1.0f));
 
-        input.addEventListener(InputSystem.KeyEvent.class, this::handleKeyEvent);
-        input.addEventListener(InputSystem.MouseEvent.class, this::handleMouseEvent);
+        inputSystem.addEventListener(InputSystem.KeyEvent.class, this::handleKeyEvent);
+        inputSystem.addEventListener(InputSystem.MouseEvent.class, this::handleMouseEvent);
     }
 
     /**
@@ -83,12 +83,12 @@ public class Camera extends Component {
      * @param pitchOffset The pitch of the camera.
      */
     public void rotate(final float yawOffset, final float pitchOffset) {
-        final Vector3 euler = Quaternion.toEuler(transform.getLocalRotation());
-        float newPitch = pitchOffset + euler.x();
-        if (newPitch > 89.0f) newPitch = 89.0f;
-        if (newPitch < -89.0f) newPitch = -89.0f;
+        final Vector3 euler = Quaternion.toEuler(transform.getLocalRotation(), Quaternion.RotationOrder.ZYX);
+        float newPitch = (float) Math.toRadians(pitchOffset) + euler.x();
+        if (newPitch > Math.toRadians(89.0f)) newPitch = (float) Math.toRadians(89.0f);
+        if (newPitch < Math.toRadians(-89.0f)) newPitch = (float) Math.toRadians(-89.0f);
 
-        transform.setLocalRotation(Quaternion.fromEuler(new Vector3(newPitch, euler.y() + yawOffset, 0.0f), Quaternion.RotationOrder.ZYX));
+        transform.setLocalRotation(Quaternion.fromEuler(new Vector3(newPitch, euler.y() + (float) Math.toRadians(yawOffset), 0.0f), Quaternion.RotationOrder.ZYX));
     }
 
     /**
@@ -98,7 +98,8 @@ public class Camera extends Component {
      */
     public Matrix4x4 getViewMatrix() {
         final Vector3 forward = Quaternion.multiply(transform.getWorldRotation(), new Vector3(0.0f, 0.0f, -1.0f));
+        final Vector3 target = Vector3.add(transform.getWorldPosition(), forward);
 
-        return Matrix4x4.lookAt(transform.getWorldPosition(), forward, new Vector3(0.0f, 1.0f, 0.0f));
+        return Matrix4x4.lookAt(transform.getWorldPosition(), target, new Vector3(0.0f, 1.0f, 0.0f));
     }
 }

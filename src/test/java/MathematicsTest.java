@@ -193,6 +193,112 @@ public class MathematicsTest {
                     }
             );
         }
+
+        @Test
+        public void testAngle() {
+            for (int i = 0; i < 18; ++i) {
+                for (int j = 0; j < 18; ++j) {
+                    float angle1 = (float) Math.toRadians(i * 10f);
+                    float angle2 = (float) Math.toRadians(j * 10f);
+
+                    final Quaternion q1 = Quaternion.fromEuler(new Vector3(0f, angle1, 0f), Quaternion.RotationOrder.ZXY);
+                    final Quaternion q2 = Quaternion.fromEuler(new Vector3(0f, angle2, 0f), Quaternion.RotationOrder.ZXY);
+                    assertEquals(Math.abs(angle2 - angle1), Quaternion.angle(q1, q2), 1e-5f);
+                }
+            }
+
+            assertAll(
+                    () -> {
+                        final Quaternion q = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+                        assertEquals(0f, Quaternion.angle(q, q));
+
+                        final Quaternion nq = new Quaternion(0.0f, 0.0f, 0.0f, -1.0f);
+                        assertEquals(0f, Quaternion.angle(q, nq));
+                    },
+                    () -> {
+                        // Nearly normalized quaternion to self is zero
+                        final Quaternion q = new Quaternion(0.6244676f, -0.7761726f, -0.06790633f, -0.05463386f); // dot(q, q) = 0.999999816753
+                        assertEquals(0f, Quaternion.angle(q, q));
+
+                        // Nearly normalized quaternion to negative self is zero
+                        final Quaternion nq = new Quaternion(-0.6244676f, 0.7761726f, 0.06790633f, 0.05463386f); // dot(q, nq) = -0.999999816753
+                        assertEquals(0f, Quaternion.angle(q, nq));
+                    }
+            );
+        }
+
+        @Test
+        public void testFromEuler() {
+            final Vector3 angles = new Vector3((float) Math.toRadians(-50.0), (float) Math.toRadians(28.0f), (float) Math.toRadians(39.0f));
+
+            final Quaternion xyz = Quaternion.fromEuler(angles, Quaternion.RotationOrder.XYZ);
+            final Quaternion xzy = Quaternion.fromEuler(angles, Quaternion.RotationOrder.XZY);
+            final Quaternion yxz = Quaternion.fromEuler(angles, Quaternion.RotationOrder.YXZ);
+            final Quaternion yzx = Quaternion.fromEuler(angles, Quaternion.RotationOrder.YZX);
+            final Quaternion zxy = Quaternion.fromEuler(angles, Quaternion.RotationOrder.ZXY);
+            final Quaternion zyx = Quaternion.fromEuler(angles, Quaternion.RotationOrder.ZYX);
+
+            assertArrayEquals(
+                    Quaternion.toFloatArray(new Quaternion(-0.4597331f, 0.06979711f, 0.3899215f, 0.7948176f)),
+                    Quaternion.toFloatArray(xyz),
+                    0.0001f
+            );
+            assertArrayEquals(
+                    Quaternion.toFloatArray(new Quaternion(-0.3133549f, 0.06979711f, 0.3899215f, 0.8630749f)),
+                    Quaternion.toFloatArray(xzy),
+                    0.0001f
+            );
+            assertArrayEquals(
+                    Quaternion.toFloatArray(new Quaternion(-0.4597331f, 0.06979711f, 0.1971690f, 0.8630748f)),
+                    Quaternion.toFloatArray(yxz),
+                    0.0001f
+            );
+            assertArrayEquals(
+                    Quaternion.toFloatArray(new Quaternion(-0.4597331f, 0.34356190f, 0.1971690f, 0.7948176f)),
+                    Quaternion.toFloatArray(yzx),
+                    0.0001f
+            );
+            assertArrayEquals(
+                    Quaternion.toFloatArray(new Quaternion(-0.3133549f, 0.34356190f, 0.3899215f, 0.7948176f)),
+                    Quaternion.toFloatArray(zxy),
+                    0.0001f
+            );
+            assertArrayEquals(
+                    Quaternion.toFloatArray(new Quaternion(-0.3133549f, 0.34356190f, 0.1971690f, 0.8630749f)),
+                    Quaternion.toFloatArray(zyx),
+                    0.0001f
+            );
+        }
+
+        @Test
+        public void testToEuler() {
+            final float pi = (float) Math.PI;
+            final float pi6 = pi / 6f;
+
+            for (Quaternion.RotationOrder order : Quaternion.RotationOrder.values()) {
+                for (int i = 0; i < 13; ++i) {
+                    float x = -pi + i * pi;
+                    for (int j = 0; j < 13; ++j) {
+                        float y = -pi + j * pi6;
+                        for (int k = 0; k < 13; ++k) {
+                            float z = -pi + k * pi6;
+                            for (int l = 0; l < 20; ++l) {
+                                final Vector3 angles = Vector3.multiply(new Vector3(x, y, z), new Vector3(0.99f + l * 0.001f));
+
+                                final Quaternion expected = Quaternion.fromEuler(angles, Quaternion.RotationOrder.ZXY);
+
+                                final Vector3 actualEulers = Quaternion.toEuler(expected, order);
+                                final Quaternion actual = Quaternion.fromEuler(actualEulers, order);
+
+                                final float error = Quaternion.angle(expected, actual);
+
+                                assertTrue(error < 0.0045f || error > Math.PI - 0.0045f);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Nested

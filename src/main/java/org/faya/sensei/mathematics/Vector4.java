@@ -54,11 +54,15 @@ public record Vector4(float x, float y, float z, float w) {
         return new Vector4((float) Math.sqrt(x.x), (float) Math.sqrt(x.y), (float) Math.sqrt(x.z), (float) Math.sqrt(x.w));
     }
 
+    public static float csum(final Vector4 x) {
+        return x.x + x.y + x.z + x.w;
+    }
+
     public static Vector4 normalize(final Vector4 x) {
         return divide(x, new Vector4((float) Math.sqrt(dot(x, x))));
     }
 
-    public static float[] toArray(final Vector4 v) {
+    public static float[] toFloatArray(final Vector4 v) {
         return new float[] { v.x, v.y, v.z, v.w };
     }
 }

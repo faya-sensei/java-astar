@@ -50,15 +50,15 @@ public class Engine {
 
         components.forEach(Component::start);
 
-        long initialTime = System.currentTimeMillis();
+        long initialTime = System.nanoTime();
         final float fixedDeltaTime = 1.0f / FIXED_UPDATE_PER_SECOND;
         float accumulator = 0;
 
         while (running.get() && !window.windowShouldClose()) {
             window.pollEvents();
 
-            final long now = System.currentTimeMillis();
-            final float deltaTime = (now - initialTime) / 1000.0f;
+            final long now = System.nanoTime();
+            final float deltaTime = (now - initialTime) / 1e9f;
             accumulator += deltaTime;
 
             while (accumulator >= fixedDeltaTime) {

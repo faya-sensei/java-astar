@@ -47,15 +47,52 @@ public record Quaternion(float x, float y, float z, float w) {
         return multiply(lhs, invQ);
     }
 
-    public static float dot(Quaternion a, Quaternion b) {
+    public static Vector4 toVector4(final Quaternion x) {
+        return new Vector4(x.x, x.y, x.z, x.w);
+    }
+
+    /**
+     * Returns the conjugate of a quaternion value.
+     *
+     * @param q The quaternion to conjugate.
+     * @return The conjugate of the input quaternion.
+     */
+    public static Quaternion conjugate(final Quaternion q) {
+        return new Quaternion(q.x * -1.0f, q.y * -1.0f, q.z * -1.0f, q.w);
+    }
+
+    /**
+     * Returns the dot product of two quaternions.
+     *
+     * @param a The first quaternion.
+     * @param b The second quaternion.
+     * @return The dot product of two quaternions.
+     */
+    public static float dot(final Quaternion a, final Quaternion b) {
         return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
     }
 
-    public static Quaternion normalize(final Quaternion x) {
-        final Vector4 v = new Vector4(x.x, x.y, x.z, x.w);
+    /**
+     * Returns the length of a quaternion.
+     *
+     * @param q The input quaternion.
+     * @return The length of the input quaternion.
+     */
+    public static float length(final Quaternion q) {
+        return (float) Math.sqrt(dot(q, q));
+    }
+
+    /**
+     * Returns a normalized version of a quaternion q by scaling it by 1 / length(q).
+     *
+     * @param q The quaternion to normalize.
+     * @return The normalized quaternion.
+     */
+    public static Quaternion normalize(final Quaternion q) {
+        final Vector4 v = new Vector4(q.x, q.y, q.z, q.w);
         final float length = (float) Math.sqrt(Vector4.dot(v, v));
 
-        return new Quaternion(x.x / length, x.y / length, x.z / length, x.w / length);
+        return new Quaternion(q.x / length, q.y / length, q.z / length, q.w / length);
     }
 
     public enum RotationOrder {XYZ, XZY, YXZ, YZX, ZXY, ZYX}
@@ -117,33 +154,122 @@ public record Quaternion(float x, float y, float z, float w) {
     }
 
     /**
-     * Returns the Euler angles (in radians) corresponding to a quaternion.
+     * Returns the Euler angle representation of the quaternion. The returned
+     * angles depend on the specified order to apply the three rotations around
+     * the principal axes. All rotation angles are in radians and clockwise when
+     * looking along the rotation axis towards the origin.
      *
      * @param value The quaternion to be converted.
-     * @return A vector containing the Euler angles around the x-, y-, and
-     * z-axes in radians.
+     * @param order The order in which the rotations are applied.
+     * @return The Euler angle representation of the quaternion in the specified
+     * order.
      */
-    public static Vector3 toEuler(final Quaternion value) {
-        final float sqw = value.w * value.w;
-        final float sqx = value.x * value.x;
-        final float sqy = value.y * value.y;
-        final float sqz = value.z * value.z;
+    public static Vector3 toEuler(final Quaternion value, final RotationOrder order) {
+        final float epsilon = 1e-6f;
+        final float cutoff = (1.0f - 2.0f * epsilon) * (1.0f - 2.0f * epsilon);
 
-        final float unit = sqx + sqy + sqz + sqw;
-        final float test = value.x * value.y + value.z * value.w;
+        final Vector4 d1 = Vector4.multiply(Quaternion.toVector4(value), new Vector4(value.w), new Vector4(2.0f)); // xw, yw, zw, ww
+        final Vector4 d2 = Vector4.multiply(Quaternion.toVector4(value), new Vector4(value.y, value.z, value.x, value.w), new Vector4(2.0f)); // xy, yz, zx, ww
+        final Vector4 d3 = Vector4.multiply(Quaternion.toVector4(value), Quaternion.toVector4(value));
 
-        if (test > 0.499f * unit) {
-            return new Vector3((float) Math.atan2(value.x, value.w), (float) Math.PI / 2.0f, 0.0f);
-        }
-        if (test < -0.499f * unit) {
-            return new Vector3(-2.0f * (float) Math.atan2(value.x, value.w), (float) -Math.PI / 2.0f, 0.0f);
-        }
-
-        return new Vector3(
-                (float) Math.atan2(2.0f * value.y * value.w - 2.0f * value.x * value.z, sqx - sqy - sqz + sqw),
-                (float) Math.asin(2.0f * test / unit),
-                (float) Math.atan2(2.0f * value.x * value.w - 2.0f * value.y * value.z, -sqx + sqy - sqz + sqw)
-        );
+        return switch (order) {
+            case XYZ -> {
+                float y1 = d2.z() - d1.y();
+                if (y1 * y1 < cutoff) {
+                    final float x1 = d2.y() + d1.x();
+                    final float x2 = d3.z() + d3.w() - d3.y() - d3.x();
+                    final float z1 = d2.x() + d1.z();
+                    final float z2 = d3.x() + d3.w() - d3.y() - d3.z();
+                    yield new Vector3((float) Math.atan2(x1, x2), -(float) Math.asin(y1), (float) Math.atan2(z1, z2));
+                } else { // xzx
+                    y1 = Math.min(-1.0f, Math.max(y1, 1.0f));
+                    final Vector4 abcd = new Vector4(d2.z(), d1.y(), d2.x(), d1.z());
+                    final float x1 = 2.0f * (abcd.x() * abcd.w() + abcd.y() * abcd.z()); // 2(ad+bc)
+                    final float x2 = Vector4.csum(Vector4.multiply(abcd, abcd, new Vector4(-1.0f, 1.0f, -1.0f, 1.0f)));
+                    yield new Vector3((float) Math.atan2(x1, x2), -(float) Math.asin(y1), 0.0f);
+                }
+            }
+            case XZY -> {
+                float y1 = d2.x() + d1.z();
+                if (y1 * y1 < cutoff) {
+                    final float x1 = -d2.y() + d1.x();
+                    final float x2 = d3.y() + d3.w() - d3.z() - d3.x();
+                    final float z1 = -d2.z() + d1.y();
+                    final float z2 = d3.x() + d3.w() - d3.y() - d3.z();
+                    yield new Vector3((float) Math.atan2(x1, x2), (float) Math.atan2(z1, z2), (float) Math.asin(y1));
+                } else { // xyx
+                    y1 = Math.min(-1.0f, Math.max(y1, 1.0f));
+                    final Vector4 abcd = new Vector4(d2.x(), d1.z(), d2.z(), d1.y());
+                    final float x1 = 2.0f * (abcd.x() * abcd.w() + abcd.y() * abcd.z()); // 2(ad+bc)
+                    final float x2 = Vector4.csum(Vector4.multiply(abcd, abcd, new Vector4(-1.0f, 1.0f, -1.0f, 1.0f)));
+                    yield new Vector3((float) Math.atan2(x1, x2), 0.0f, (float) Math.asin(y1));
+                }
+            }
+            case YXZ -> {
+                float y1 = d2.y() + d1.x();
+                if (y1 * y1 < cutoff) {
+                    final float x1 = -d2.z() + d1.y();
+                    final float x2 = d3.z() + d3.w() - d3.x() - d3.y();
+                    final float z1 = -d2.x() + d1.z();
+                    final float z2 = d3.y() + d3.w() - d3.z() - d3.x();
+                    yield new Vector3((float) Math.asin(y1), (float) Math.atan2(x1, x2), (float) Math.atan2(z1, z2));
+                } else { // yzy
+                    y1 = Math.min(-1.0f, Math.max(y1, 1.0f));
+                    final Vector4 abcd = new Vector4(d2.x(), d1.z(), d2.y(), d1.x());
+                    final float x1 = 2.0f * (abcd.x() * abcd.w() + abcd.y() * abcd.z()); // 2(ad+bc)
+                    final float x2 = Vector4.csum(Vector4.multiply(abcd, abcd, new Vector4(-1.0f, 1.0f, -1.0f, 1.0f)));
+                    yield new Vector3((float) Math.asin(y1), (float) Math.atan2(x1, x2), 0.0f);
+                }
+            }
+            case YZX -> {
+                float y1 = d2.x() - d1.z();
+                if (y1 * y1 < cutoff) {
+                    final float x1 = d2.z() + d1.y();
+                    final float x2 = d3.x() + d3.w() - d3.z() - d3.y();
+                    final float z1 = d2.y() + d1.x();
+                    final float z2 = d3.y() + d3.w() - d3.x() - d3.z();
+                    yield new Vector3((float) Math.atan2(z1, z2), (float) Math.atan2(x1, x2), -(float) Math.asin(y1));
+                } else { // yxy
+                    y1 = Math.min(-1.0f, Math.max(y1, 1.0f));
+                    final Vector4 abcd = new Vector4(d2.x(), d1.z(), d2.y(), d1.x());
+                    final float x1 = 2.0f * (abcd.x() * abcd.w() + abcd.y() * abcd.z()); // 2(ad+bc)
+                    final float x2 = Vector4.csum(Vector4.multiply(abcd, abcd, new Vector4(-1.0f, 1.0f, -1.0f, 1.0f)));
+                    yield new Vector3(0.0f, (float) Math.atan2(x1, x2), -(float) Math.asin(y1));
+                }
+            }
+            case ZXY -> {
+                float y1 = d2.y() - d1.x();
+                if (y1 * y1 < cutoff) {
+                    final float x1 = d2.x() + d1.z();
+                    final float x2 = d3.y() + d3.w() - d3.x() - d3.z();
+                    final float z1 = d2.z() + d1.y();
+                    final float z2 = d3.z() + d3.w() - d3.x() - d3.y();
+                    yield new Vector3(-(float) Math.asin(y1), (float) Math.atan2(z1, z2), (float) Math.atan2(x1, x2));
+                } else { // zxz
+                    y1 = Math.min(-1.0f, Math.max(y1, 1.0f));
+                    final Vector4 abcd = new Vector4(d2.z(), d1.y(), d2.y(), d1.x());
+                    final float x1 = 2.0f * (abcd.x() * abcd.w() + abcd.y() * abcd.z()); // 2(ad+bc)
+                    final float x2 = Vector4.csum(Vector4.multiply(abcd, abcd, new Vector4(-1.0f, 1.0f, -1.0f, 1.0f)));
+                    yield new Vector3(-(float) Math.asin(y1), 0.0f, (float) Math.atan2(x1, x2));
+                }
+            }
+            case ZYX -> {
+                float y1 = d2.z() + d1.y();
+                if (y1 * y1 < cutoff) {
+                    final float x1 = -d2.x() + d1.z();
+                    final float x2 = d3.x() + d3.w() - d3.y() - d3.z();
+                    final float z1 = -d2.y() + d1.x();
+                    final float z2 = d3.z() + d3.w() - d3.y() - d3.x();
+                    yield new Vector3((float) Math.atan2(z1, z2), (float) Math.asin(y1), (float) Math.atan2(x1, x2));
+                } else { // zxz
+                    y1 = Math.min(-1.0f, Math.max(y1, 1.0f));
+                    final Vector4 abcd = new Vector4(d2.z(), d1.y(), d2.y(), d1.x());
+                    final float x1 = 2.0f * (abcd.x() * abcd.w() + abcd.y() * abcd.z()); // 2(ad+bc)
+                    final float x2 = Vector4.csum(Vector4.multiply(abcd, abcd, new Vector4(-1.0f, 1.0f, -1.0f, 1.0f)));
+                    yield new Vector3(0.0f, (float) Math.asin(y1), (float) Math.atan2(x1, x2));
+                }
+            }
+        };
     }
 
     /**
@@ -192,6 +318,19 @@ public record Quaternion(float x, float y, float z, float w) {
         final float c = (float) Math.cos(half);
 
         return new Quaternion(0.0f, 0.0f, s, c);
+    }
+
+    /**
+     * Returns the angle in radians between two unit quaternions.
+     *
+     * @param q1 The first quaternion.
+     * @param q2 The second quaternion.
+     * @return The angle between two unit quaternions.
+     */
+    public static float angle(final Quaternion q1, final Quaternion q2) {
+        final Quaternion normalize = normalize(multiply(conjugate(q1), q2));
+        final float diff = (float) Math.asin(Vector3.length(new Vector3(normalize.x, normalize.y, normalize.z)));
+        return diff + diff;
     }
 
     /**

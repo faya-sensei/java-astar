@@ -56,6 +56,10 @@ public record Vector3(float x, float y, float z) {
         return divide(x, new Vector3((float) Math.sqrt(dot(x, x))));
     }
 
+    public static float length(final Vector3 x) {
+        return (float) Math.sqrt(dot(x, x));
+    }
+
     public static float[] toFloatArray(final Vector3 v) {
         return new float[] { v.x, v.y, v.z };
     }

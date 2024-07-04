@@ -1,6 +1,7 @@
 package org.faya.sensei.visualization;
 
 import org.faya.sensei.mathematics.Matrix4x4;
+import org.faya.sensei.mathematics.Vector4;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
@@ -65,6 +66,12 @@ public class Shader {
 
     public void setUniform(final String uniformName, final float value) {
         glUniform1f(getUniformLocation(uniformName), value);
+    }
+
+    public void setUniform(final String uniformName, final Vector4 vector) {
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            glUniform4fv(getUniformLocation(uniformName), stack.floats(Vector4.toFloatArray(vector)));
+        }
     }
 
     public void setUniform(final String uniformName, final Matrix4x4 matrix) {

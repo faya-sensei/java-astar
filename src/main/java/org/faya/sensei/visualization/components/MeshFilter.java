@@ -59,6 +59,12 @@ public class MeshFilter extends Component {
 
     // Function
 
+    /**
+     * Extract the uv buffer from the mesh instance.
+     *
+     * @param aiMesh The mesh instance.
+     * @return The uv buffer.
+     */
     private static float[] processTextCoords(AIMesh aiMesh) {
         final AIVector3D.Buffer buffer = aiMesh.mTextureCoords(0);
         if (buffer == null) return new float[] { };
@@ -72,6 +78,12 @@ public class MeshFilter extends Component {
         return data;
     }
 
+    /**
+     * Extract the vertex buffer from the mesh instance.
+     *
+     * @param aiMesh The mesh instance.
+     * @return The vertex buffer.
+     */
     private static float[] processVertices(AIMesh aiMesh) {
         final AIVector3D.Buffer buffer = aiMesh.mVertices();
         final float[] data = new float[buffer.remaining() * 3];
@@ -85,6 +97,12 @@ public class MeshFilter extends Component {
         return data;
     }
 
+    /**
+     * Extract the index buffer from the mesh instance.
+     *
+     * @param aiMesh The mesh instance.
+     * @return The index buffer.
+     */
     private static int[] processIndices(AIMesh aiMesh) {
         final List<Integer> indices = new ArrayList<>();
         final int numFaces = aiMesh.mNumFaces();
