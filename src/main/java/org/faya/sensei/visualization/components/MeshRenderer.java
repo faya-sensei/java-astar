@@ -25,7 +25,7 @@ public class MeshRenderer extends Component {
 
     @Override
     public void start() {
-        shader.setup();
+        shader.init();
 
         shader.registerUniform("projectionMatrix");
         shader.registerUniform("modelMatrix");
@@ -38,7 +38,7 @@ public class MeshRenderer extends Component {
         final int[] indices = mesh.getIndices();
 
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            this.vboIdList = new ArrayList<>();
+            vboIdList = new ArrayList<>();
 
             vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);

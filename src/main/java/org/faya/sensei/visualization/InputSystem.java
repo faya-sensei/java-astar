@@ -55,4 +55,9 @@ public class InputSystem {
             }
         }
     }
+
+    public void dispose() {
+        listeners.clear();
+        instance = null;
+    }
 }

@@ -28,13 +28,15 @@ public class EngineRenderer {
         shaderSystem.registerGlobalUniform("viewMatrix");
 
         updateProjectionMatrix();
-
-        GL.createCapabilities();
-        glEnable(GL_DEPTH_TEST);
     }
 
     public void setCamera(Camera camera) {
         this.camera = camera;
+    }
+
+    public void init() {
+        GL.createCapabilities();
+        glEnable(GL_DEPTH_TEST);
     }
 
     public void render(List<MeshRenderer> renderer) {
@@ -49,5 +51,9 @@ public class EngineRenderer {
 
     public void updateProjectionMatrix() {
         projectionMatrix = Matrix4x4.perspective(fov, (float) window.getWidth() / window.getHeight(), zNear, zFar);
+    }
+
+    public void dispose() {
+        shaderSystem.dispose();
     }
 }

@@ -27,7 +27,7 @@ public class Shader {
         this.shaderModuleDataList.addAll(shaderModuleDataList);
     }
 
-    public void setup() {
+    public void init() {
         programId = glCreateProgram();
         if (programId == 0) throw new RuntimeException("Could not create Shader.");
 

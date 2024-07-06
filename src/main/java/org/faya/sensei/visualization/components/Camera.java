@@ -20,7 +20,7 @@ public class Camera extends Component {
     @Override
     public void start() {
         transform = (Transform) entity.getComponent(Transform.class);
-        transform.setLocalPosition(new Vector3(0.0f, 0.0f, 3.0f));
+        transform.setLocalPosition(new Vector3(0.0f, 0.0f, -3.0f));
         transform.setLocalRotation(new Quaternion(0.0f, 0.0f, 0.0f, 1.0f));
 
         inputSystem.addEventListener(InputSystem.KeyEvent.class, this::handleKeyEvent);

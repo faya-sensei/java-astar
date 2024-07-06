@@ -1,6 +1,7 @@
 package org.faya.sensei.visualization;
 
 import org.faya.sensei.mathematics.Matrix4x4;
+import org.faya.sensei.mathematics.Vector4;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.HashMap;
@@ -53,6 +54,19 @@ public class ShaderSystem {
         }
     }
 
+    public void setUniform(final String uniformName, final Vector4 vector) {
+        final Map<Integer, Integer> programLocations = globalUniforms.get(uniformName);
+        if (programLocations != null) {
+            for (final Map.Entry<Integer, Integer> entry : programLocations.entrySet()) {
+                glUseProgram(entry.getKey());
+                try (final MemoryStack stack = MemoryStack.stackPush()) {
+                    glUniform4fv(entry.getValue(), stack.floats(Vector4.toFloatArray(vector)));
+                }
+            }
+            glUseProgram(0);
+        }
+    }
+
     public void setUniform(final String uniformName, final Matrix4x4 matrix) {
         final Map<Integer, Integer> programLocations = globalUniforms.get(uniformName);
         if (programLocations != null) {
@@ -64,5 +78,10 @@ public class ShaderSystem {
             }
             glUseProgram(0);
         }
+    }
+
+    public void dispose() {
+        globalUniforms.clear();
+        instance = null;
     }
 }

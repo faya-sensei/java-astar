@@ -31,6 +31,10 @@ public class Engine {
     }
 
     public void start() {
+        window.init();
+        inputSystem.init(window);
+        renderer.init();
+
         components.addAll(scene.getComponents());
         renderer.setCamera(
                 scene.getComponents().stream()
@@ -40,7 +44,6 @@ public class Engine {
                         .orElse(null)
         );
 
-        inputSystem.init(window);
         inputSystem.addEventListener(InputSystem.KeyEvent.class, event -> {
             if (event.key() == GLFW_KEY_ESCAPE && event.action() == GLFW_RELEASE)
                 stop();
@@ -79,7 +82,9 @@ public class Engine {
         }
 
         components.forEach(Component::dispose);
+        renderer.dispose();
         window.dispose();
+        inputSystem.dispose();
     }
 
     public void stop() {

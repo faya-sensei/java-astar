@@ -2,32 +2,24 @@ import org.faya.sensei.mathematics.Matrix4x4;
 import org.faya.sensei.mathematics.Quaternion;
 import org.faya.sensei.mathematics.Vector3;
 import org.faya.sensei.mathematics.Vector4;
-import org.faya.sensei.visualization.EngineEntity;
-import org.faya.sensei.visualization.EngineScene;
-import org.faya.sensei.visualization.Shader;
-import org.faya.sensei.visualization.components.Camera;
-import org.faya.sensei.visualization.components.MeshFilter;
-import org.faya.sensei.visualization.components.Transform;
+import org.faya.sensei.visualization.*;
+import org.faya.sensei.visualization.components.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIf;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL20;
-import org.mockito.MockedStatic;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 public class VisualizationTest {
 
     @Nested
-    class ComponentsTest {
+    class ComponentTest {
 
         @Nested
         class TransformTest {
@@ -84,8 +76,8 @@ public class VisualizationTest {
 
             @Test
             public void testMove() {
-                camera.move(new Vector3(0.0f, 0.0f, -1.0f));
-                assertEquals(new Vector3(0.0f, 0.0f, 2.0f), transform.getLocalPosition());
+                camera.move(new Vector3(0.0f, 0.0f, 3.0f));
+                assertEquals(new Vector3(0.0f, 0.0f, 0.0f), transform.getLocalPosition());
             }
 
             @Test
@@ -152,168 +144,6 @@ public class VisualizationTest {
     }
 
     @Nested
-    class ShaderTest {
-
-        private static final int WINDOW_WIDTH = 9;
-        private static final int WINDOW_HEIGHT = 9;
-
-        private static boolean isGpuAvailable;
-        private static long window;
-        private Shader shader;
-
-        public boolean isGpuAvailable() {
-            return isGpuAvailable;
-        }
-
-        @BeforeAll
-        public static void prepare() {
-            try {
-                if (!GLFW.glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
-
-                GLFW.glfwDefaultWindowHints();
-                GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
-
-                window = GLFW.glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Test Shader", NULL, NULL);
-                if (window == NULL) throw new RuntimeException("Failed to create the GLFW window");
-
-                GLFW.glfwMakeContextCurrent(window);
-                GL.createCapabilities();
-
-                glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-                isGpuAvailable = true;
-            } catch (Exception e) {
-                isGpuAvailable = false;
-            }
-        }
-
-        @AfterAll
-        public static void cleanup() {
-            if (isGpuAvailable) {
-                GLFW.glfwDestroyWindow(window);
-                GLFW.glfwTerminate();
-            }
-        }
-
-        @BeforeEach
-        public void setup() {
-            Shader.ShaderModuleData vertexModule = new Shader.ShaderModuleData("shaders/triangle-vertex.glsl", GL_VERTEX_SHADER);
-            Shader.ShaderModuleData fragmentModule = new Shader.ShaderModuleData("shaders/triangle-fragment.glsl", GL_FRAGMENT_SHADER);
-            shader = new Shader(List.of(vertexModule, fragmentModule));
-        }
-
-        @Test
-        public void testShaderMock() {
-            try (MockedStatic<GL20> mockedGL = mockStatic(GL20.class)) {
-                final int mockProgramId = 1;
-                final int mockUniformLocation = 10;
-
-                mockedGL.when(GL20::glCreateProgram).thenReturn(mockProgramId);
-
-                mockedGL.when(() -> GL20.glCreateShader(GL_VERTEX_SHADER)).thenReturn(2);
-                mockedGL.when(() -> GL20.glCreateShader(GL_FRAGMENT_SHADER)).thenReturn(3);
-
-                mockedGL.when(() -> GL20.glGetShaderi(anyInt(), eq(GL_COMPILE_STATUS))).thenReturn(1);
-                mockedGL.when(() -> GL20.glGetProgrami(anyInt(), eq(GL_LINK_STATUS))).thenReturn(1);
-
-                shader.setup();
-
-                mockedGL.when(() -> GL20.glGetUniformLocation(1, "uColor")).thenReturn(mockUniformLocation);
-
-                shader.registerUniform("uColor");
-                shader.setUniform("uColor", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-                mockedGL.verify(() -> GL20.glCreateShader(GL_VERTEX_SHADER));
-                mockedGL.verify(() -> GL20.glCreateShader(GL_FRAGMENT_SHADER));
-                mockedGL.verify(() -> GL20.glAttachShader(1, 2));
-                mockedGL.verify(() -> GL20.glAttachShader(1, 3));
-                mockedGL.verify(() -> GL20.glLinkProgram(1));
-            }
-        }
-
-        @Test
-        @EnabledIf("isGpuAvailable")
-        public void testShaderGPU() {
-            shader.setup();
-
-            final int[] backgroundColor = { 0, 0, 0, 0 }; // None
-            final int[] triangleColor = { 255, 192, 203, 255 }; // Pink
-
-            final int[][] pattern = {
-                    {0, 0, 0, 0, 1, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 1, 0, 0, 0, 0},
-                    {0, 0, 0, 1, 1, 1, 0, 0, 0},
-                    {0, 0, 0, 1, 1, 1, 0, 0, 0},
-                    {0, 0, 1, 1, 1, 1, 1, 0, 0},
-                    {0, 0, 1, 1, 1, 1, 1, 0, 0},
-                    {0, 1, 1, 1, 1, 1, 1, 1, 0},
-                    {0, 1, 1, 1, 1, 1, 1, 1, 0},
-                    {1, 1, 1, 1, 1, 1, 1, 1, 1},
-            };
-
-            final float[] vertices = {
-                     0.0f, -1.0f, 0.0f,   // Top vertex
-                    -1.0f,  1.0f, 0.0f,   // Bottom-left vertex
-                     1.0f,  1.0f, 0.0f    // Bottom-right vertex
-            };
-
-            final int vaoId = glGenVertexArrays();
-            final int vboId = glGenBuffers();
-
-            glBindVertexArray(vaoId);
-
-            glBindBuffer(GL_ARRAY_BUFFER, vboId);
-            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            shader.useProgram();
-
-            shader.registerUniform("uColor");
-            shader.setUniform("uColor", new Vector4(
-                    triangleColor[0] / 255.0f,
-                    triangleColor[1] / 255.0f,
-                    triangleColor[2] / 255.0f,
-                    triangleColor[3] / 255.0f
-            ));
-
-            glBindVertexArray(vaoId);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-            glBindVertexArray(0);
-
-            shader.stopProgram();
-
-            final ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(WINDOW_WIDTH * WINDOW_HEIGHT * 4);
-            glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer);
-
-            for (int y = 0; y < WINDOW_HEIGHT; y++) {
-                for (int x = 0; x < WINDOW_WIDTH; x++) {
-                    final int index = (y * WINDOW_WIDTH + x) * 4;
-
-                    final int[] actualPixel = new int[] {
-                            Byte.toUnsignedInt(pixelBuffer.get(index)),
-                            Byte.toUnsignedInt(pixelBuffer.get(index + 1)),
-                            Byte.toUnsignedInt(pixelBuffer.get(index + 2)),
-                            Byte.toUnsignedInt(pixelBuffer.get(index + 3))
-                    };
-
-                    assertArrayEquals(pattern[y][x] == 1 ? triangleColor : backgroundColor, actualPixel);
-                }
-            }
-
-            // Cleanup
-            glDeleteBuffers(vboId);
-            glDeleteVertexArrays(vaoId);
-        }
-    }
-
-    @Nested
     class EngineEntityTest {
 
         private EngineEntity parentEntity;
@@ -337,6 +167,128 @@ public class VisualizationTest {
             parentEntity.addComponent(camera);
 
             assertEquals(camera, parentEntity.getComponent(Camera.class));
+        }
+    }
+
+    @Nested
+    class EngineRendererTest {
+
+        private static final int WINDOW_WIDTH = 9;
+        private static final int WINDOW_HEIGHT = 9;
+
+        private static final int[] BACKGROUND_COLOR = { 0, 0, 0, 0 }; // None
+        private static final int[] TRIANGLE_COLOR = { 255, 0, 0, 255 }; // Red
+        private static final int[][] PATTERN = {
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 1, 1, 1, 0, 0, 0},
+                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        };
+
+        private static boolean isGpuAvailable;
+        private static Window window;
+
+        public boolean isGpuAvailable() {
+            return isGpuAvailable;
+        }
+
+        @BeforeAll
+        public static void prepare() {
+            try {
+                window = new Window("Test", WINDOW_WIDTH, WINDOW_HEIGHT);
+                isGpuAvailable = true;
+            } catch (Exception e) {
+                isGpuAvailable = false;
+            }
+        }
+
+        @Test
+        @EnabledIf("isGpuAvailable")
+        public void testRender() {
+            final Shader shader = new Shader(
+                    List.of(
+                            new Shader.ShaderModuleData("shaders/engine-vertex.glsl", GL_VERTEX_SHADER),
+                            new Shader.ShaderModuleData("shaders/engine-fragment.glsl", GL_FRAGMENT_SHADER)
+                    )
+            );
+
+            glfwMakeContextCurrent(window.getHandle());
+
+            final EngineRenderer renderer = new EngineRenderer(window);
+            renderer.init();
+
+            final float[] vertices = {
+                    // Front face (first triangle)
+                    -0.5f, -0.5f, 0.0f, // Bottom left
+                     0.5f, -0.5f, 0.0f, // Bottom right
+                     0.0f,  0.5f, 0.0f, // Top center
+
+                    // Back face (second triangle)
+                    -0.5f, -0.5f, 0.0f, // Bottom left
+                     0.0f,  0.5f, 0.0f, // Top center
+                     0.5f, -0.5f, 0.0f  // Bottom right
+            };
+
+            final float[] uvs = {
+                    // UVs for front face
+                    0.0f, 0.0f, // Bottom left
+                    1.0f, 0.0f, // Bottom right
+                    0.5f, 1.0f, // Top center
+
+                    // UVs for back face
+                    0.0f, 0.0f, // Bottom left
+                    0.5f, 1.0f, // Top center
+                    1.0f, 0.0f  // Bottom right
+            };
+
+            final int[] indices = {
+                    // Front face
+                    0, 1, 2,
+
+                    // Back face
+                    3, 4, 5
+            };
+
+            final EngineEntity cameraEntity = new EngineEntity();
+            cameraEntity.addComponent(new Camera());
+
+            final EngineEntity modelEntity = new EngineEntity();
+            modelEntity.addComponent(new MeshFilter(vertices, uvs, indices));
+            modelEntity.addComponent(new MeshRenderer(shader));
+
+            cameraEntity.getComponents().forEach(Component::start);
+            modelEntity.getComponents().forEach(Component::start);
+
+            renderer.setCamera((Camera) cameraEntity.getComponent(Camera.class));
+            renderer.render(List.of((MeshRenderer) modelEntity.getComponent(MeshRenderer.class)));
+
+            final ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(WINDOW_WIDTH * WINDOW_HEIGHT * 4);
+            glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer);
+
+            for (int y = 0; y < WINDOW_HEIGHT; ++y) {
+                for (int x = 0; x < WINDOW_WIDTH; ++x) {
+                    final int index = (y * WINDOW_WIDTH + x) * 4;
+
+                    final int[] actualPixel = new int[]{
+                            Byte.toUnsignedInt(pixelBuffer.get(index)),
+                            Byte.toUnsignedInt(pixelBuffer.get(index + 1)),
+                            Byte.toUnsignedInt(pixelBuffer.get(index + 2)),
+                            Byte.toUnsignedInt(pixelBuffer.get(index + 3))
+                    };
+
+                    System.out.printf("[%d, %d] rgb(%d, %d, %d, %d)%n", x, y, actualPixel[0], actualPixel[1], actualPixel[2], actualPixel[3]);
+                    assertArrayEquals(PATTERN[y][x] == 1 ? TRIANGLE_COLOR : BACKGROUND_COLOR, actualPixel);
+                }
+            }
+
+            cameraEntity.getComponents().forEach(Component::dispose);
+            modelEntity.getComponents().forEach(Component::dispose);
+            renderer.dispose();
         }
     }
 
@@ -365,6 +317,123 @@ public class VisualizationTest {
 
             assertTrue(scene.getComponents().containsAll(entity.getComponents()));
             assertTrue(scene.getComponents().containsAll(childEntity.getComponents()));
+        }
+    }
+
+    @Nested
+    class ShaderTest {
+
+        private static final int WINDOW_WIDTH = 9;
+        private static final int WINDOW_HEIGHT = 9;
+
+        private static final int[] BACKGROUND_COLOR = { 0, 0, 0, 0 }; // None
+        private static final int[] TRIANGLE_COLOR = { 255, 192, 203, 255 }; // Pink
+        private static final int[][] PATTERN = {
+                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 1, 1, 1, 0, 0, 0},
+                {0, 0, 0, 1, 1, 1, 0, 0, 0},
+                {0, 0, 1, 1, 1, 1, 1, 0, 0},
+                {0, 0, 1, 1, 1, 1, 1, 0, 0},
+                {0, 1, 1, 1, 1, 1, 1, 1, 0},
+                {0, 1, 1, 1, 1, 1, 1, 1, 0},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1},
+        };
+
+        private static boolean isGpuAvailable;
+        private static Window window;
+
+        public boolean isGpuAvailable() {
+            return isGpuAvailable;
+        }
+
+        @BeforeAll
+        public static void prepare() {
+            try {
+                window = new Window("Test Shader", WINDOW_WIDTH, WINDOW_HEIGHT);
+                isGpuAvailable = true;
+            } catch (Exception e) {
+                isGpuAvailable = false;
+            }
+        }
+
+        @Test
+        @EnabledIf("isGpuAvailable")
+        public void testShader() {
+            glfwMakeContextCurrent(window.getHandle());
+            GL.createCapabilities();
+            glViewport(0, 0, window.getWidth(), window.getHeight());
+
+            final ShaderSystem shaderSystem = ShaderSystem.getInstance();
+            final Shader shader = new Shader(
+                    List.of(
+                            new Shader.ShaderModuleData("shaders/shader-vertex.glsl", GL_VERTEX_SHADER),
+                            new Shader.ShaderModuleData("shaders/shader-fragment.glsl", GL_FRAGMENT_SHADER)
+                    )
+            );
+
+            final int vaoId = glGenVertexArrays();
+            final int vboId = glGenBuffers();
+
+            try {
+                shader.init();
+
+                shaderSystem.registerGlobalUniform("uColor");
+                shader.registerUniform("uColor");
+
+                final float[] vertices = {
+                         0.0f, -1.0f, 0.0f,   // Top vertex
+                        -1.0f, 1.0f, 0.0f,   // Bottom-left vertex
+                         1.0f, 1.0f, 0.0f    // Bottom-right vertex
+                };
+
+                glBindVertexArray(vaoId);
+
+                glBindBuffer(GL_ARRAY_BUFFER, vboId);
+                glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+
+                glEnableVertexAttribArray(0);
+                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
+
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                shaderSystem.setUniform("uColor", new Vector4(TRIANGLE_COLOR[0] / 255.0f, TRIANGLE_COLOR[1] / 255.0f, TRIANGLE_COLOR[2] / 255.0f, TRIANGLE_COLOR[3] / 255.0f));
+
+                shader.useProgram();
+
+                glBindVertexArray(vaoId);
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+                glBindVertexArray(0);
+
+                shader.stopProgram();
+
+                final ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(WINDOW_WIDTH * WINDOW_HEIGHT * 4);
+                glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer);
+
+                for (int y = 0; y < WINDOW_HEIGHT; ++y) {
+                    for (int x = 0; x < WINDOW_WIDTH; ++x) {
+                        final int index = (y * WINDOW_WIDTH + x) * 4;
+
+                        final int[] actualPixel = new int[]{
+                                Byte.toUnsignedInt(pixelBuffer.get(index)),
+                                Byte.toUnsignedInt(pixelBuffer.get(index + 1)),
+                                Byte.toUnsignedInt(pixelBuffer.get(index + 2)),
+                                Byte.toUnsignedInt(pixelBuffer.get(index + 3))
+                        };
+
+                        System.out.printf("[%d, %d] rgb(%d, %d, %d, %d)%n", x, y, actualPixel[0], actualPixel[1], actualPixel[2], actualPixel[3]);
+                        assertArrayEquals(PATTERN[y][x] == 1 ? TRIANGLE_COLOR : BACKGROUND_COLOR, actualPixel);
+                    }
+                }
+            } finally {
+                shaderSystem.dispose();
+                glDeleteBuffers(vboId);
+                glDeleteVertexArrays(vaoId);
+                glfwMakeContextCurrent(NULL);
+            }
         }
     }
 }
