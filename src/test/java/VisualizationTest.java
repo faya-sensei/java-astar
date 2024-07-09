@@ -7,6 +7,8 @@ import org.faya.sensei.visualization.components.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL20;
+import org.mockito.MockedStatic;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -15,6 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
 
 public class VisualizationTest {
 
@@ -209,7 +214,7 @@ public class VisualizationTest {
 
         @Test
         @EnabledIf("isGpuAvailable")
-        public void testRender() {
+        public void testRenderGPU() {
             final Shader shader = new Shader(
                     List.of(
                             new Shader.ShaderModuleData("shaders/engine-vertex.glsl", GL_VERTEX_SHADER),
@@ -265,7 +270,8 @@ public class VisualizationTest {
             modelEntity.getComponents().forEach(Component::start);
 
             renderer.setCamera((Camera) cameraEntity.getComponent(Camera.class));
-            renderer.render(List.of((MeshRenderer) modelEntity.getComponent(MeshRenderer.class)));
+            renderer.setRenderer(List.of((MeshRenderer) modelEntity.getComponent(MeshRenderer.class)));
+            renderer.render();
 
             final ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(WINDOW_WIDTH * WINDOW_HEIGHT * 4);
             glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer);
@@ -329,15 +335,15 @@ public class VisualizationTest {
         private static final int[] BACKGROUND_COLOR = { 0, 0, 0, 0 }; // None
         private static final int[] TRIANGLE_COLOR = { 255, 192, 203, 255 }; // Pink
         private static final int[][] PATTERN = {
-                {0, 0, 0, 0, 1, 0, 0, 0, 0},
-                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 1, 1, 1, 1, 1, 0, 0},
                 {0, 0, 0, 1, 1, 1, 0, 0, 0},
                 {0, 0, 0, 1, 1, 1, 0, 0, 0},
-                {0, 0, 1, 1, 1, 1, 1, 0, 0},
-                {0, 0, 1, 1, 1, 1, 1, 0, 0},
-                {0, 1, 1, 1, 1, 1, 1, 1, 0},
-                {0, 1, 1, 1, 1, 1, 1, 1, 0},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
         };
 
         private static boolean isGpuAvailable;
@@ -358,8 +364,46 @@ public class VisualizationTest {
         }
 
         @Test
-        @EnabledIf("isGpuAvailable")
         public void testShader() {
+            final ShaderSystem shaderSystem = ShaderSystem.getInstance();
+            final Shader shader = new Shader(
+                    List.of(
+                            new Shader.ShaderModuleData("shaders/shader-vertex.glsl", GL_VERTEX_SHADER),
+                            new Shader.ShaderModuleData("shaders/shader-fragment.glsl", GL_FRAGMENT_SHADER)
+                    )
+            );
+
+            try (MockedStatic<GL20> mockedGL = mockStatic(GL20.class)) {
+                final int mockProgramId = 1;
+                final int mockUniformLocation = 10;
+
+                mockedGL.when(GL20::glCreateProgram).thenReturn(mockProgramId);
+
+                mockedGL.when(() -> GL20.glCreateShader(GL_VERTEX_SHADER)).thenReturn(2);
+                mockedGL.when(() -> GL20.glCreateShader(GL_FRAGMENT_SHADER)).thenReturn(3);
+
+                mockedGL.when(() -> GL20.glGetShaderi(anyInt(), eq(GL_COMPILE_STATUS))).thenReturn(1);
+                mockedGL.when(() -> GL20.glGetProgrami(anyInt(), eq(GL_LINK_STATUS))).thenReturn(1);
+
+                shader.init();
+
+                mockedGL.when(() -> GL20.glGetUniformLocation(1, "uColor")).thenReturn(mockUniformLocation);
+
+                shaderSystem.registerGlobalUniform("uColor");
+                shader.registerUniform("uColor");
+                shaderSystem.setUniform("uColor", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+
+                mockedGL.verify(() -> GL20.glCreateShader(GL_VERTEX_SHADER));
+                mockedGL.verify(() -> GL20.glCreateShader(GL_FRAGMENT_SHADER));
+                mockedGL.verify(() -> GL20.glAttachShader(1, 2));
+                mockedGL.verify(() -> GL20.glAttachShader(1, 3));
+                mockedGL.verify(() -> GL20.glLinkProgram(1));
+            }
+        }
+
+        @Test
+        @EnabledIf("isGpuAvailable")
+        public void testShaderGPU() {
             glfwMakeContextCurrent(window.getHandle());
             GL.createCapabilities();
             glViewport(0, 0, window.getWidth(), window.getHeight());
@@ -382,9 +426,9 @@ public class VisualizationTest {
                 shader.registerUniform("uColor");
 
                 final float[] vertices = {
-                         0.0f, -1.0f, 0.0f,   // Top vertex
-                        -1.0f, 1.0f, 0.0f,   // Bottom-left vertex
-                         1.0f, 1.0f, 0.0f    // Bottom-right vertex
+                         0.0f,  0.5f, 0.0f,   // Top vertex
+                        -0.5f, -0.5f, 0.0f,   // Bottom-left vertex
+                         0.5f, -0.5f, 0.0f    // Bottom-right vertex
                 };
 
                 glBindVertexArray(vaoId);

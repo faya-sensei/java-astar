@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL;
 
 import java.util.List;
 
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.*;
 
 public class EngineRenderer {
@@ -19,6 +20,7 @@ public class EngineRenderer {
     private final Window window;
 
     private Matrix4x4 projectionMatrix;
+    private List<MeshRenderer> renderer;
     private Camera camera;
 
     public EngineRenderer(final Window window) {
@@ -34,12 +36,16 @@ public class EngineRenderer {
         this.camera = camera;
     }
 
+    public void setRenderer(List<MeshRenderer> renderer) {
+        this.renderer = renderer;
+    }
+
     public void init() {
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
     }
 
-    public void render(List<MeshRenderer> renderer) {
+    public void render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getWidth(), window.getHeight());
 
@@ -47,6 +53,8 @@ public class EngineRenderer {
         shaderSystem.setUniform("viewMatrix", camera.getViewMatrix());
 
         renderer.forEach(MeshRenderer::render);
+
+        glfwSwapBuffers(window.getHandle());
     }
 
     public void updateProjectionMatrix() {

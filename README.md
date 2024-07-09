@@ -6,13 +6,25 @@ Another old school java exercise
 
 </div>
 
-# Overview
+## Table of Contents
+
+- [A-Star Practice](#a-star-practice)
+  - [Table of Contents](#table-of-contents)
+  - [The Overview Of The A*](#overview)
+  - [Task Checklist](#task-checklist)
+    - [Node and Decorator pattern](#1-node-and-decorator)
+    - [Grid graph and Builder pattern](#2-grid-graph-and-builder)
+    - [Heuristic and Strategy pattern](#3-heuristic-and-strategy)
+    - [Pathfinder and Observer pattern](#4-pathfinder-and-observer)
+    - [Mesh graph and Simple Stupid Funnel](#5-mesh-graph-and-simple-stupid-funnel)
+
+## Overview
 
 The A* algorithm is a fundamental programming algorithm that aids in practicing
 iteration and fostering programming thinking. It is also a practical algorithm
 widely used in real-world applications.
 
-# Task Checklist
+## Task Checklist
 
 ### 1. Node and decorator
 

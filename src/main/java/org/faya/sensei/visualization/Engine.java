@@ -14,6 +14,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 public class Engine {
 
     private static final int FIXED_UPDATE_PER_SECOND = 60;
+    private static final int FRAME_PER_SECOND = 60;
 
     private final List<Component> components = new ArrayList<>();
     private final AtomicBoolean running = new AtomicBoolean(true);
@@ -43,6 +44,12 @@ public class Engine {
                         .findFirst()
                         .orElse(null)
         );
+        renderer.setRenderer(
+                scene.getComponents().stream()
+                        .filter(component -> component instanceof MeshRenderer)
+                        .map(component -> (MeshRenderer) component)
+                        .toList()
+        );
 
         inputSystem.addEventListener(InputSystem.KeyEvent.class, event -> {
             if (event.key() == GLFW_KEY_ESCAPE && event.action() == GLFW_RELEASE)
@@ -53,16 +60,18 @@ public class Engine {
 
         components.forEach(Component::start);
 
-        long initialTime = System.nanoTime();
+        long previousTime = System.nanoTime();
         final float fixedDeltaTime = 1.0f / FIXED_UPDATE_PER_SECOND;
+        final float frameDeltaTime = 1.0f / FRAME_PER_SECOND;
         float accumulator = 0;
 
         while (running.get() && !window.windowShouldClose()) {
-            window.pollEvents();
-
-            final long now = System.nanoTime();
-            final float deltaTime = (now - initialTime) / 1e9f;
+            final long currentTime = System.nanoTime();
+            final float deltaTime = (currentTime - previousTime) / 1e9f;
+            previousTime = currentTime;
             accumulator += deltaTime;
+
+            window.pollEvents();
 
             while (accumulator >= fixedDeltaTime) {
                 components.forEach(Component::fixedUpdate);
@@ -71,14 +80,12 @@ public class Engine {
 
             components.forEach(component -> component.update(deltaTime));
 
-            renderer.render(
-                    scene.getComponents().stream()
-                            .filter(component -> component instanceof MeshRenderer)
-                            .map(component -> (MeshRenderer) component)
-                            .toList()
-            );
+            renderer.render();
 
-            initialTime = now;
+            double elapsedTime = (System.nanoTime() - currentTime) / 1e9;
+            while (elapsedTime < frameDeltaTime) {
+                elapsedTime = (System.nanoTime() - currentTime) / 1e9;
+            }
         }
 
         components.forEach(Component::dispose);
