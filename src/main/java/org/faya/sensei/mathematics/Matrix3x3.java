@@ -12,6 +12,12 @@ public record Matrix3x3(Vector3 c0, Vector3 c1, Vector3 c2) {
         );
     }
 
+    /**
+     * Return the Matrix3x3 transpose of a Matrix3x3 matrix.
+     *
+     * @param m Value to transpose.
+     * @return Transposed value.
+     */
     public static Matrix3x3 transpose(final Matrix3x3 m) {
         return new Matrix3x3(
                 m.c0.x(), m.c0.y(), m.c0.z(),
@@ -20,6 +26,12 @@ public record Matrix3x3(Vector3 c0, Vector3 c1, Vector3 c2) {
         );
     }
 
+    /**
+     * Returns the determinant of a Matrix3x3 matrix.
+     *
+     * @param m Matrix to use when computing determinant.
+     * @return The determinant of the matrix.
+     */
     public static float determinant(final Matrix3x3 m) {
         final Vector3 c0 = m.c0;
         final Vector3 c1 = m.c1;
@@ -144,6 +156,12 @@ public record Matrix3x3(Vector3 c0, Vector3 c1, Vector3 c2) {
         );
     }
 
+    /**
+     * Return a buffer of a Matrix3x3 matrix.
+     *
+     * @param m The Matrix3x3 matrix.
+     * @return The float buffer.
+     */
     public static float[] toFloatArray(final Matrix3x3 m) {
         return new float[] {
                 m.c0.x(), m.c0.y(), m.c0.z(),

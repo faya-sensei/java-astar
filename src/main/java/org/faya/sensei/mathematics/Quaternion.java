@@ -2,37 +2,72 @@ package org.faya.sensei.mathematics;
 
 public record Quaternion(float x, float y, float z, float w) {
 
+    /**
+     * Returns the result of a component-wise addition operation on two
+     * quaternions.
+     *
+     * @param lhs Left hand side Quaternion to use to compute component-wise
+     *            addition
+     * @param rhs Right hand side Quaternion to use to compute component-wise
+     *            addition.
+     * @return Quaternion result of the component-wise addition.
+     */
     public static Quaternion add(final Quaternion lhs, final Quaternion rhs) {
         return new Quaternion(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
     }
 
+    /**
+     * Returns the result of a component-wise subtraction operation on two
+     * quaternions.
+     *
+     * @param lhs Left hand side Quaternion to use to compute component-wise
+     *           subtraction.
+     * @param rhs Right hand side Quaternion to use to compute component-wise
+     *           subtraction.
+     * @return Quaternion result of the component-wise subtraction.
+     */
     public static Quaternion subtract(final Quaternion lhs, final Quaternion rhs) {
         return new Quaternion(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
     }
 
+    /**
+     * Returns the result of transforming the rhs by the quaternion lhs.
+     *
+     * @param lhs The quaternion on the left.
+     * @param rhs The quaternion on the right.
+     * @return The result of transforming rhs by the lhs.
+     */
     public static Quaternion multiply(final Quaternion lhs, final Quaternion rhs) {
-        final float cx = lhs.y * rhs.z - lhs.z * rhs.y;
-        final float cy = lhs.z * rhs.x - lhs.x * rhs.z;
-        final float cz = lhs.x * rhs.y - lhs.y * rhs.x;
-
-        final float dot = lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
-
         return new Quaternion(
-                lhs.x * rhs.w + rhs.x * lhs.w + cx,
-                lhs.y * rhs.w + rhs.y * lhs.w + cy,
-                lhs.z * rhs.w + rhs.z * lhs.w + cz,
-                lhs.w * rhs.w - dot
+                lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
+                lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x,
+                lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w,
+                lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z
         );
     }
 
-    public static Vector3 multiply(final Quaternion a, final Vector3 b) {
-        final Vector3 value = new Vector3(a.x, a.y, a.z);
+    /**
+     * Returns the result of transforming a vector by a quaternion.
+     *
+     * @param lhs The quaternion transformation.
+     * @param rhs The vector to transform.
+     * @return The transformation of vector by quaternion.
+     */
+    public static Vector3 multiply(final Quaternion lhs, final Vector3 rhs) {
+        final Vector3 value = new Vector3(lhs.x, lhs.y, lhs.z);
 
-        final Vector3 t = Vector3.multiply(new Vector3(2.0f), Vector3.cross(value, b));
+        final Vector3 t = Vector3.multiply(new Vector3(2.0f), Vector3.cross(value, rhs));
 
-        return Vector3.add(b, Vector3.multiply(new Vector3(a.w), t), Vector3.cross(value, t));
+        return Vector3.add(rhs, Vector3.multiply(new Vector3(lhs.w), t), Vector3.cross(value, t));
     }
 
+    /**
+     * Returns the result of inverse transforming the rhs by the quaternion lhs.
+     *
+     * @param lhs The quaternion on the left.
+     * @param rhs The quaternion on the right.
+     * @return The result of transforming rhs by the lhs.
+     */
     public static Quaternion divide(final Quaternion lhs, final Quaternion rhs) {
         final float ls = rhs.x * rhs.x + rhs.y * rhs.y + rhs.z * rhs.z + rhs.w * rhs.w;
         final float invNorm = 1.0f / ls;
@@ -47,8 +82,14 @@ public record Quaternion(float x, float y, float z, float w) {
         return multiply(lhs, invQ);
     }
 
-    public static Vector4 toVector4(final Quaternion x) {
-        return new Vector4(x.x, x.y, x.z, x.w);
+    /**
+     * Convert the Quaternion to Vector4.
+     *
+     * @param q The quaternion used to convert.
+     * @return The result Vector4 vector.
+     */
+    public static Vector4 toVector4(final Quaternion q) {
+        return new Vector4(q.x, q.y, q.z, q.w);
     }
 
     /**
@@ -398,6 +439,12 @@ public record Quaternion(float x, float y, float z, float w) {
         return Quaternion.normalize(new Quaternion(value[0], value[1], value[2], value[3]));
     }
 
+    /**
+     * Return a buffer of a quaternion.
+     *
+     * @param v The quaternion.
+     * @return The float buffer.
+     */
     public static float[] toFloatArray(final Quaternion v) {
         return new float[] { v.x, v.y, v.z, v.w };
     }

@@ -27,40 +27,58 @@ public record Matrix4x4(Vector4 c0, Vector4 c1, Vector4 c2, Vector4 c3) {
         );
     }
 
+    /**
+     * Returns the Vector4 column vector result of a matrix multiplication
+     * between a Matrix4x4 matrix and a Vector4 column vector.
+     *
+     * @param lhs Left hand side argument of the matrix multiply.
+     * @param rhs Right hand side argument of the matrix multiply.
+     * @return The computed matrix multiplication.
+     */
     public static Vector4 multiply(final Matrix4x4 lhs, final Vector4 rhs) {
         return Vector4.add(
-                Vector4.multiply(lhs.c0, rhs.x()),
-                Vector4.multiply(lhs.c1, rhs.y()),
-                Vector4.multiply(lhs.c2, rhs.z()),
-                Vector4.multiply(lhs.c3, rhs.w())
+                Vector4.multiply(lhs.c0, new Vector4(rhs.x())),
+                Vector4.multiply(lhs.c1, new Vector4(rhs.y())),
+                Vector4.multiply(lhs.c2, new Vector4(rhs.z())),
+                Vector4.multiply(lhs.c3, new Vector4(rhs.w()))
         );
     }
 
+    /**
+     * Returns the result of a component-wise multiplication operation on two
+     * Matrix4x4 matrices.
+     *
+     * @param lhs Left hand side Matrix4x4 to use to compute component-wise
+     *            multiplication.
+     * @param rhs Right hand side Matrix4x4 to use to compute component-wise
+     *            multiplication.
+     * @return Matrix4x4 result of the component-wise multiplication.
+     */
     public static Matrix4x4 multiply(final Matrix4x4 lhs, final Matrix4x4 rhs) {
         return new Matrix4x4(
                 Vector4.add(
-                        Vector4.multiply(lhs.c0, rhs.c0.x()),
-                        Vector4.multiply(lhs.c1, rhs.c0.y()),
-                        Vector4.multiply(lhs.c2, rhs.c0.z()),
-                        Vector4.multiply(lhs.c3, rhs.c0.w())
+                        Vector4.multiply(lhs.c0, new Vector4(rhs.c0.x())),
+                        Vector4.multiply(lhs.c1, new Vector4(rhs.c0.y())),
+                        Vector4.multiply(lhs.c2, new Vector4(rhs.c0.z())),
+                        Vector4.multiply(lhs.c3, new Vector4(rhs.c0.w()))
                 ),
                 Vector4.add(
-                        Vector4.multiply(lhs.c0, rhs.c1.x()),
-                        Vector4.multiply(lhs.c1, rhs.c1.y()),
-                        Vector4.multiply(lhs.c2, rhs.c1.z()),
-                        Vector4.multiply(lhs.c3, rhs.c1.w())
+                        Vector4.multiply(lhs.c0, new Vector4(rhs.c1.x())),
+                        Vector4.multiply(lhs.c1, new Vector4(rhs.c1.y())),
+                        Vector4.multiply(lhs.c2, new Vector4(rhs.c1.z())),
+                        Vector4.multiply(lhs.c3, new Vector4(rhs.c1.w()))
                 ),
                 Vector4.add(
-                        Vector4.multiply(lhs.c0, rhs.c2.x()),
-                        Vector4.multiply(lhs.c1, rhs.c2.y()),
-                        Vector4.multiply(lhs.c2, rhs.c2.z()),
-                        Vector4.multiply(lhs.c3, rhs.c2.w())
+                        Vector4.multiply(lhs.c0, new Vector4(rhs.c2.x())),
+                        Vector4.multiply(lhs.c1, new Vector4(rhs.c2.y())),
+                        Vector4.multiply(lhs.c2, new Vector4(rhs.c2.z())),
+                        Vector4.multiply(lhs.c3, new Vector4(rhs.c2.w()))
                 ),
                 Vector4.add(
-                        Vector4.multiply(lhs.c0, rhs.c3.x()),
-                        Vector4.multiply(lhs.c1, rhs.c3.y()),
-                        Vector4.multiply(lhs.c2, rhs.c3.z()),
-                        Vector4.multiply(lhs.c3, rhs.c3.w())
+                        Vector4.multiply(lhs.c0, new Vector4(rhs.c3.x())),
+                        Vector4.multiply(lhs.c1, new Vector4(rhs.c3.y())),
+                        Vector4.multiply(lhs.c2, new Vector4(rhs.c3.z())),
+                        Vector4.multiply(lhs.c3, new Vector4(rhs.c3.w()))
                 )
         );
     }
@@ -69,9 +87,9 @@ public record Matrix4x4(Vector4 c0, Vector4 c1, Vector4 c2, Vector4 c3) {
      * Returns a Matrix4x4 perspective projection matrix based on field of view.
      *
      * @param verticalFov Vertical Field of view in radians.
-     * @param aspect X:Y aspect ratio.
-     * @param near Distance to near plane. Must be greater than zero.
-     * @param far Distance to far plane. Must be greater than zero.
+     * @param aspect      X:Y aspect ratio.
+     * @param near        Distance to near plane. Must be greater than zero.
+     * @param far         Distance to far plane. Must be greater than zero.
      * @return The Matrix4x4 perspective projection matrix.
      */
     public static Matrix4x4 perspective(final float verticalFov, final float aspect, final float near, final float far) {
@@ -142,6 +160,12 @@ public record Matrix4x4(Vector4 c0, Vector4 c1, Vector4 c2, Vector4 c3) {
         );
     }
 
+    /**
+     * Return a buffer of a Matrix4x4 matrix.
+     *
+     * @param m The Matrix4x4 matrix.
+     * @return The float buffer.
+     */
     public static float[] toFloatArray(final Matrix4x4 m) {
         return new float[] {
                 m.c0.x(), m.c0.y(), m.c0.z(), m.c0.w(),
