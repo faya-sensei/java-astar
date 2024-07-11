@@ -23,7 +23,6 @@ public class Camera extends Component {
     private final float moveSpeed = 1.0f;
 
     private Transform transform;
-    private float yaw = 90.0f, pitch = 0.0f;
     private float lastX = -1.0f, lastY = -1.0f;
 
     private int moveFlags;
@@ -47,8 +46,8 @@ public class Camera extends Component {
 
         if ((moveFlags & MOVE_FORWARD) != 0) moveDirection = Vector3.add(moveDirection, forward);
         if ((moveFlags & MOVE_BACKWARD) != 0) moveDirection = Vector3.subtract(moveDirection, forward);
-        if ((moveFlags & MOVE_LEFT) != 0) moveDirection = Vector3.add(moveDirection, right);
-        if ((moveFlags & MOVE_RIGHT) != 0) moveDirection = Vector3.subtract(moveDirection, right);
+        if ((moveFlags & MOVE_LEFT) != 0) moveDirection = Vector3.subtract(moveDirection, right);
+        if ((moveFlags & MOVE_RIGHT) != 0) moveDirection = Vector3.add(moveDirection, right);
         if ((moveFlags & MOVE_UP) != 0) moveDirection = Vector3.add(moveDirection, new Vector3(0.0f, 1.0f, 0.0f));
         if ((moveFlags & MOVE_DOWN) != 0) moveDirection = Vector3.add(moveDirection, new Vector3(0.0f, -1.0f, 0.0f));
 
@@ -92,15 +91,7 @@ public class Camera extends Component {
         lastX = (float) event.xpos();
         lastY = (float) event.ypos();
 
-        yaw += xoffset * lookSpeed;
-        pitch += yoffset * lookSpeed;
-
-        pitch = Math.max(-89.0f, Math.min(89.0f, pitch));
-
-        Quaternion yawQuaternion = Quaternion.rotateY((float) Math.toRadians(yaw));
-        Quaternion pitchQuaternion = Quaternion.rotateX((float) Math.toRadians(pitch));
-
-        transform.setLocalRotation(Quaternion.multiply(pitchQuaternion, yawQuaternion));
+        rotate(xoffset * lookSpeed, yoffset * lookSpeed);
     }
 
     /**

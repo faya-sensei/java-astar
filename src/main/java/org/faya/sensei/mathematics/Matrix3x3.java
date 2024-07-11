@@ -62,34 +62,34 @@ public record Matrix3x3(Vector3 c0, Vector3 c1, Vector3 c2) {
 
         return switch (order) {
             case XYZ -> new Matrix3x3(
-                    c.y() * c.z(), c.z() * s.x() * s.y() - c.x() * s.z(), c.x() * c.z() * s.y() + s.x() * s.z(),
-                    c.y() * s.z(), c.x() * c.z() + s.x() * s.y() * s.z(), c.x() * s.y() * s.z() - c.z() * s.x(),
-                    -s.y(),        c.y() * s.x(),                         c.x() * c.y()
+                     c.y() * c.z(), c.z() * s.x() * s.y() - c.x() * s.z(),  c.x() * c.z() * s.y() + s.x() * s.z(),
+                     c.y() * s.z(), c.x() * c.z() + s.x() * s.y() * s.z(),  c.x() * s.y() * s.z() - c.z() * s.x(),
+                    -s.y(),         c.y() * s.x(),                          c.x() * c.y()
             );
             case XZY -> new Matrix3x3(
-                    c.y() * c.z(),  s.x() * s.y() - c.x() * c.y() * s.z(), c.x() * s.y() + c.y() * s.x() * s.z(),
-                    s.z(),          c.x() * c.z(),                         -c.z() * s.x(),
-                    -c.z() * s.y(), c.y() * s.x() + c.x() * s.y() * s.z(), c.x() * c.y() - s.x() * s.y() * s.z()
+                     c.y() * c.z(), s.x() * s.y() - c.x() * c.y() * s.z(),  c.x() * s.y() + c.y() * s.x() * s.z(),
+                     s.z(),         c.x() * c.z(),                         -c.z() * s.x(),
+                    -c.z() * s.y(), c.y() * s.x() + c.x() * s.y() * s.z(),  c.x() * c.y() - s.x() * s.y() * s.z()
             );
             case YXZ -> new Matrix3x3(
-                    c.y() * c.z() - s.x() * s.y() * s.z(), -c.x() * s.z(), c.z() * s.y() + c.y() * s.x() * s.z(),
-                    c.z() * s.x() * s.y() + c.y() * s.z(), c.x() * c.z(),  s.y() * s.z() - c.y() * c.z() * s.x(),
-                    -c.x() * s.y(),                        s.x(),          c.x() * c.y()
+                     c.y() * c.z() - s.x() * s.y() * s.z(), -c.x() * s.z(),  c.z() * s.y() + c.y() * s.x() * s.z(),
+                     c.z() * s.x() * s.y() + c.y() * s.z(),  c.x() * c.z(),  s.y() * s.z() - c.y() * c.z() * s.x(),
+                    -c.x() * s.y(),                          s.x(),          c.x() * c.y()
             );
             case YZX -> new Matrix3x3(
-                    c.y() * c.z(),                         -s.z(),        c.z() * s.y(),
-                    s.x() * s.y() + c.x() * c.y() * s.z(), c.x() * c.z(), c.x() * s.y() * s.z() - c.y() * s.x(),
-                    c.y() * s.x() * s.z() - c.x() * s.y(), c.z() * s.x(), c.x() * c.y() + s.x() * s.y() * s.z()
+                     c.y() * c.z(),                         -s.z(),          c.z() * s.y(),
+                     s.x() * s.y() + c.x() * c.y() * s.z(),  c.x() * c.z(),  c.x() * s.y() * s.z() - c.y() * s.x(),
+                     c.y() * s.x() * s.z() - c.x() * s.y(),  c.z() * s.x(),  c.x() * c.y() + s.x() * s.y() * s.z()
             );
             case ZXY -> new Matrix3x3(
-                    c.y() * c.z() + s.x() * s.y() * s.z(), c.z() * s.x() * s.y() - c.y() * s.z(), c.x() * s.y(),
-                    c.x() * s.z(),                         c.x() * c.z(),                         -s.x(),
-                    c.y() * s.x() * s.z() - c.z() * s.y(), c.y() * c.z() * s.x() + s.y() * s.z(), c.x() * c.y()
+                     c.y() * c.z() + s.x() * s.y() * s.z(),  c.z() * s.x() * s.y() - c.y() * s.z(),  c.x() * s.y(),
+                     c.x() * s.z(),                          c.x() * c.z(),                         -s.x(),
+                     c.y() * s.x() * s.z() - c.z() * s.y(),  c.y() * c.z() * s.x() + s.y() * s.z(),  c.x() * c.y()
             );
             case ZYX -> new Matrix3x3(
-                    c.y() * c.z(),                         -c.y() * s.z(),                        s.y(),
-                    c.z() * s.x() * s.y() + c.x() * s.z(), c.x() * c.z() - s.x() * s.y() * s.z(), -c.y() * s.x(),
-                    s.x() * s.z() - c.x() * c.z() * s.y(), c.z() * s.x() + c.x() * s.y() * s.z(), c.x() * c.y()
+                     c.y() * c.z(),                         -c.y() * s.z(),                          s.y(),
+                     c.z() * s.x() * s.y() + c.x() * s.z(),  c.x() * c.z() - s.x() * s.y() * s.z(), -c.y() * s.x(),
+                     s.x() * s.z() - c.x() * c.z() * s.y(),  c.z() * s.x() + c.x() * s.y() * s.z(),  c.x() * c.y()
             );
         };
     }
