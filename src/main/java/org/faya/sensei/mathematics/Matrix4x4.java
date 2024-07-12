@@ -120,6 +120,100 @@ public record Matrix4x4(Vector4 c0, Vector4 c1, Vector4 c2, Vector4 c3) {
     }
 
     /**
+     * Returns the Matrix4x4 full inverse of a Matrix4x4 matrix.
+     *
+     * @param matrix Matrix to invert.
+     * @return The inverted matrix.
+     */
+    public static Matrix4x4 inverse(Matrix4x4 matrix) {
+        float a = matrix.c0.x(), b = matrix.c1.x(), c = matrix.c2.x(), d = matrix.c3.x();
+        float e = matrix.c0.y(), f = matrix.c1.y(), g = matrix.c2.y(), h = matrix.c3.y();
+        float i = matrix.c0.z(), j = matrix.c1.z(), k = matrix.c2.z(), l = matrix.c3.z();
+        float m = matrix.c0.w(), n = matrix.c1.w(), o = matrix.c2.w(), p = matrix.c3.w();
+
+        float kp_lo = k * p - l * o;
+        float jp_ln = j * p - l * n;
+        float jo_kn = j * o - k * n;
+        float ip_lm = i * p - l * m;
+        float io_km = i * o - k * m;
+        float in_jm = i * n - j * m;
+
+        float a11 = +(f * kp_lo - g * jp_ln + h * jo_kn);
+        float a12 = -(e * kp_lo - g * ip_lm + h * io_km);
+        float a13 = +(e * jp_ln - f * ip_lm + h * in_jm);
+        float a14 = -(e * jo_kn - f * io_km + g * in_jm);
+
+        float det = a * a11 + b * a12 + c * a13 + d * a14;
+
+        if (Math.abs(det) < Float.MIN_VALUE) {
+            return new Matrix4x4(
+                    new Vector4(Float.NaN, Float.NaN, Float.NaN, Float.NaN),
+                    new Vector4(Float.NaN, Float.NaN, Float.NaN, Float.NaN),
+                    new Vector4(Float.NaN, Float.NaN, Float.NaN, Float.NaN),
+                    new Vector4(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+            );
+        }
+
+        float invDet = 1.0f / det;
+
+        float gp_ho = g * p - h * o;
+        float fp_hn = f * p - h * n;
+        float fo_gn = f * o - g * n;
+        float ep_hm = e * p - h * m;
+        float eo_gm = e * o - g * m;
+        float en_fm = e * n - f * m;
+
+        float gl_hk = g * l - h * k;
+        float fl_hj = f * l - h * j;
+        float fk_gj = f * k - g * j;
+        float el_hi = e * l - h * i;
+        float ek_gi = e * k - g * i;
+        float ej_fi = e * j - f * i;
+
+        return new Matrix4x4(
+                new Vector4(
+                        a11 * invDet,
+                        -(b * kp_lo - c * jp_ln + d * jo_kn) * invDet,
+                        +(b * gp_ho - c * fp_hn + d * fo_gn) * invDet,
+                        -(b * gl_hk - c * fl_hj + d * fk_gj) * invDet
+                ),
+                new Vector4(
+                        a12 * invDet,
+                        +(a * kp_lo - c * ip_lm + d * io_km) * invDet,
+                        -(a * gp_ho - c * ep_hm + d * eo_gm) * invDet,
+                        +(a * gl_hk - c * el_hi + d * ek_gi) * invDet
+                ),
+                new Vector4(
+                        a13 * invDet,
+                        -(a * jp_ln - b * ip_lm + d * in_jm) * invDet,
+                        +(a * fp_hn - b * ep_hm + d * en_fm) * invDet,
+                        -(a * fl_hj - b * el_hi + d * ej_fi) * invDet
+                ),
+                new Vector4(
+                        a14 * invDet,
+                        +(a * jo_kn - b * io_km + c * in_jm) * invDet,
+                        -(a * fo_gn - b * eo_gm + c * en_fm) * invDet,
+                        +(a * fk_gj - b * ek_gi + c * ej_fi) * invDet
+                )
+        );
+    }
+
+    /**
+     * Return the Matrix4x4 transpose of a Matrix4x4 matrix.
+     *
+     * @param m Value to transpose.
+     * @return Transposed value.
+     */
+    public static Matrix4x4 transpose(Matrix4x4 m) {
+        return new Matrix4x4(
+                m.c0().x(), m.c0().y(), m.c0().z(), m.c0().w(),
+                m.c1().x(), m.c1().y(), m.c1().z(), m.c1().w(),
+                m.c2().x(), m.c2().y(), m.c2().z(), m.c2().w(),
+                m.c3().x(), m.c3().y(), m.c3().z(), m.c3().w()
+        );
+    }
+
+    /**
      * Returns a Matrix4x4 view matrix given an eye position, a target point and
      * a unit length up vector.
      *

@@ -3,6 +3,7 @@ package org.faya.sensei.visualization.components;
 import org.faya.sensei.mathematics.Matrix4x4;
 import org.faya.sensei.mathematics.Quaternion;
 import org.faya.sensei.mathematics.Vector3;
+import org.faya.sensei.mathematics.Vector4;
 import org.faya.sensei.visualization.InputSystem;
 
 import java.util.function.BiConsumer;
@@ -41,15 +42,16 @@ public class Camera extends Component {
     public void update(float delta) {
         Vector3 moveDirection = new Vector3(0.0f);
 
-        Vector3 forward = Quaternion.multiply(transform.getLocalRotation(), new Vector3(0.0f, 0.0f, 1.0f));
-        Vector3 right = Quaternion.multiply(transform.getLocalRotation(), new Vector3(1.0f, 0.0f, 0.0f));
+        final Vector3 forward = Quaternion.multiply(transform.getLocalRotation(), new Vector3(0.0f, 0.0f, 1.0f));
+        final Vector3 right = Quaternion.multiply(transform.getLocalRotation(), new Vector3(-1.0f, 0.0f, 0.0f));
+        final Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
 
         if ((moveFlags & MOVE_FORWARD) != 0) moveDirection = Vector3.add(moveDirection, forward);
         if ((moveFlags & MOVE_BACKWARD) != 0) moveDirection = Vector3.subtract(moveDirection, forward);
-        if ((moveFlags & MOVE_LEFT) != 0) moveDirection = Vector3.subtract(moveDirection, right);
         if ((moveFlags & MOVE_RIGHT) != 0) moveDirection = Vector3.add(moveDirection, right);
-        if ((moveFlags & MOVE_UP) != 0) moveDirection = Vector3.add(moveDirection, new Vector3(0.0f, 1.0f, 0.0f));
-        if ((moveFlags & MOVE_DOWN) != 0) moveDirection = Vector3.add(moveDirection, new Vector3(0.0f, -1.0f, 0.0f));
+        if ((moveFlags & MOVE_LEFT) != 0) moveDirection = Vector3.subtract(moveDirection, right);
+        if ((moveFlags & MOVE_UP) != 0) moveDirection = Vector3.add(moveDirection, up);
+        if ((moveFlags & MOVE_DOWN) != 0) moveDirection = Vector3.subtract(moveDirection, up);
 
         if (!moveDirection.equals(new Vector3(0.0f))) {
             move(Vector3.multiply(Vector3.normalize(moveDirection), new Vector3(moveSpeed * delta)));
@@ -127,6 +129,24 @@ public class Camera extends Component {
         final Vector3 forward = Quaternion.multiply(transform.getWorldRotation(), new Vector3(0.0f, 0.0f, -1.0f));
         final Vector3 target = Vector3.add(transform.getWorldPosition(), forward);
 
-        return Matrix4x4.lookAt(transform.getWorldPosition(), target, new Vector3(0.0f, 1.0f, 0.0f));
+        final Matrix4x4 lookMatrix = Matrix4x4.lookAt(transform.getWorldPosition(), target, new Vector3(0.0f, 1.0f, 0.0f));
+
+        final Matrix4x4 inverseRotation = Matrix4x4.transpose(
+                new Matrix4x4(
+                        lookMatrix.c0(),
+                        lookMatrix.c1(),
+                        lookMatrix.c2(),
+                        new Vector4(0.0f, 0.0f, 0.0f, 1.0f)
+                )
+        );
+
+        final Vector4 translation = Matrix4x4.multiply(inverseRotation, Vector4.multiply(lookMatrix.c3(), new Vector4(-1.0f)));
+
+        return new Matrix4x4(
+                inverseRotation.c0(),
+                inverseRotation.c1(),
+                inverseRotation.c2(),
+                new Vector4(translation.x(), translation.y(), translation.z(), 1.0f)
+        );
     }
 }

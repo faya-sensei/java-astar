@@ -98,10 +98,10 @@ public class VisualizationTest {
                 transform.setLocalRotation(Quaternion.fromEuler(new Vector3(0.0f, (float) Math.toRadians(90.0f), 0.0f), Quaternion.RotationOrder.ZYX));
 
                 final Matrix4x4 expectedViewMatrix = new Matrix4x4(
-                        0.0f, 0.0f, -1.0f, 1.0f,
-                        0.0f, 1.0f,  0.0f, 2.0f,
-                        1.0f, 0.0f,  0.0f, 3.0f,
-                        0.0f, 0.0f,  0.0f, 1.0f
+                         0.0f, 0.0f, 1.0f, -3.0f,
+                         0.0f, 1.0f, 0.0f, -2.0f,
+                        -1.0f, 0.0f, 0.0f,  1.0f,
+                         0.0f, 0.0f, 0.0f,  1.0f
                 );
 
                 final Matrix4x4 actualViewMatrix = camera.getViewMatrix();
@@ -228,35 +228,19 @@ public class VisualizationTest {
             renderer.init();
 
             final float[] vertices = {
-                    // Front face (first triangle)
                     -0.5f, -0.5f, 0.0f, // Bottom left
                      0.5f, -0.5f, 0.0f, // Bottom right
                      0.0f,  0.5f, 0.0f, // Top center
-
-                    // Back face (second triangle)
-                    -0.5f, -0.5f, 0.0f, // Bottom left
-                     0.0f,  0.5f, 0.0f, // Top center
-                     0.5f, -0.5f, 0.0f  // Bottom right
             };
 
             final float[] uvs = {
-                    // UVs for front face
                     0.0f, 0.0f, // Bottom left
                     1.0f, 0.0f, // Bottom right
                     0.5f, 1.0f, // Top center
-
-                    // UVs for back face
-                    0.0f, 0.0f, // Bottom left
-                    0.5f, 1.0f, // Top center
-                    1.0f, 0.0f  // Bottom right
             };
 
             final int[] indices = {
-                    // Front face
-                    0, 1, 2,
-
-                    // Back face
-                    3, 4, 5
+                    0, 1, 2
             };
 
             final EngineEntity cameraEntity = new EngineEntity();

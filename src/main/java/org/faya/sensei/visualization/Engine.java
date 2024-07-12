@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Engine {
 
@@ -81,6 +80,8 @@ public class Engine {
             components.forEach(component -> component.update(deltaTime));
 
             renderer.render();
+
+            glfwSwapBuffers(window.getHandle());
 
             double elapsedTime = (System.nanoTime() - currentTime) / 1e9;
             while (elapsedTime < frameDeltaTime) {

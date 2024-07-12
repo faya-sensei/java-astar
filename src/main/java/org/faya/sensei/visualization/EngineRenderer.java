@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL;
 
 import java.util.List;
 
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.*;
 
 public class EngineRenderer {
@@ -53,8 +52,6 @@ public class EngineRenderer {
         shaderSystem.setUniform("viewMatrix", camera.getViewMatrix());
 
         renderer.forEach(MeshRenderer::render);
-
-        glfwSwapBuffers(window.getHandle());
     }
 
     public void updateProjectionMatrix() {
