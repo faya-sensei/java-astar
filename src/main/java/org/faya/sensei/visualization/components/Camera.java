@@ -24,7 +24,9 @@ public class Camera extends Component {
     private final float moveSpeed = 1.0f;
 
     private Transform transform;
-    private float lastX = -1.0f, lastY = -1.0f;
+    private float yaw = 90.0f, pitch = 0.0f;
+    private float lastX = Float.NaN;
+    private float lastY = Float.NaN;
 
     private int moveFlags;
 
@@ -88,12 +90,14 @@ public class Camera extends Component {
      * @param event The mouse event info.
      */
     private void handleMouseEvent(InputSystem.MouseEvent event) {
-        final float xoffset = lastX >= 0.0f && lastY >= 0.0f ? (float) event.xpos() - lastX : 0.0f;
-        final float yoffset = lastX >= 0.0f && lastY >= 0.0f ? lastY - (float) event.ypos() : 0.0f; // reversed since y-coordinates go from bottom to top
+        final float xoffset = !Float.isNaN(lastX) && !Float.isNaN(lastY) ? (float) event.xpos() - lastX : 0.0f;
+        final float yoffset = !Float.isNaN(lastX) && !Float.isNaN(lastY) ? lastY - (float) event.ypos() : 0.0f; // reversed since y-coordinates go from bottom to top
         lastX = (float) event.xpos();
         lastY = (float) event.ypos();
 
-        rotate(xoffset * lookSpeed, yoffset * lookSpeed);
+        if (xoffset != 0.0f || yoffset != 0.0f) {
+            rotate(-xoffset * lookSpeed, -yoffset * lookSpeed);
+        }
     }
 
     /**
@@ -112,12 +116,18 @@ public class Camera extends Component {
      * @param pitchOffset The pitch of the camera.
      */
     public void rotate(final float yawOffset, final float pitchOffset) {
-        final Vector3 euler = Quaternion.toEuler(transform.getLocalRotation(), Quaternion.RotationOrder.ZYX);
-        float newPitch = (float) Math.toRadians(pitchOffset) + euler.x();
-        if (newPitch > Math.toRadians(89.0f)) newPitch = (float) Math.toRadians(89.0f);
-        if (newPitch < Math.toRadians(-89.0f)) newPitch = (float) Math.toRadians(-89.0f);
+        yaw += yawOffset;
+        pitch += pitchOffset;
 
-        transform.setLocalRotation(Quaternion.fromEuler(new Vector3(newPitch, euler.y() + (float) Math.toRadians(yawOffset), 0.0f), Quaternion.RotationOrder.ZYX));
+        pitch = Math.max(-89.0f, Math.min(89.0f, pitch));
+
+        float yawRadians = (float) Math.toRadians(yaw);
+        float pitchRadians = (float) Math.toRadians(pitch);
+
+        final Quaternion yawRotation = Quaternion.rotateY(yawRadians);
+        final Quaternion pitchRotation = Quaternion.rotateX(pitchRadians);
+
+        transform.setLocalRotation(Quaternion.multiply(yawRotation, pitchRotation));
     }
 
     /**
