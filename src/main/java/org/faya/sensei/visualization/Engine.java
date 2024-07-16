@@ -2,7 +2,7 @@ package org.faya.sensei.visualization;
 
 import org.faya.sensei.visualization.components.Camera;
 import org.faya.sensei.visualization.components.Component;
-import org.faya.sensei.visualization.components.MeshRenderer;
+import org.faya.sensei.visualization.components.Renderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,15 +38,15 @@ public class Engine {
         components.addAll(scene.getComponents());
         renderer.setCamera(
                 scene.getComponents().stream()
-                        .filter(component -> component instanceof Camera)
+                        .filter(Camera.class::isInstance)
                         .map(component -> (Camera) component)
                         .findFirst()
                         .orElse(null)
         );
         renderer.setRenderer(
                 scene.getComponents().stream()
-                        .filter(component -> component instanceof MeshRenderer)
-                        .map(component -> (MeshRenderer) component)
+                        .filter(Renderer.class::isInstance)
+                        .map(component -> (Renderer) component)
                         .toList()
         );
 

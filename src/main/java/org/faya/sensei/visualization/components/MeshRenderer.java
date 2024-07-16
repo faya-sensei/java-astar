@@ -12,20 +12,20 @@ import java.util.List;
 
 import static org.lwjgl.opengl.GL30.*;
 
-public class MeshRenderer extends Component {
+public class MeshRenderer extends Renderer {
 
-    private final Shader shader;
     private MeshFilter mesh;
     private int vaoId;
     private List<Integer> vboIdList;
 
     public MeshRenderer(Shader shader) {
-        this.shader = shader;
+        super(shader);
     }
 
+    /** @inheritDoc */
     @Override
     public void start() {
-        shader.init();
+        super.start();
 
         shader.registerUniform("projectionMatrix");
         shader.registerUniform("modelMatrix");
@@ -82,6 +82,7 @@ public class MeshRenderer extends Component {
         }
     }
 
+    /** @inheritDoc */
     public void render() {
         shader.useProgram();
 
@@ -100,6 +101,7 @@ public class MeshRenderer extends Component {
         shader.stopProgram();
     }
 
+    /** @inheritDoc */
     @Override
     public void dispose() {
         vboIdList.forEach(GL30::glDeleteBuffers);

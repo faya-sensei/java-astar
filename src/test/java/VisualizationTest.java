@@ -80,19 +80,6 @@ public class VisualizationTest {
             }
 
             @Test
-            public void testMove() {
-                camera.move(new Vector3(0.0f, 0.0f, 3.0f));
-                assertEquals(new Vector3(0.0f, 0.0f, 0.0f), transform.getLocalPosition());
-            }
-
-            @Test
-            public void testRotation() {
-                camera.rotate(45.0f, 0.0f);
-                Vector3 eulerAngles = Quaternion.toEuler(transform.getLocalRotation(), Quaternion.RotationOrder.ZYX);
-                assertEquals(Math.toRadians(45.0f), eulerAngles.y(), 0.0001f);
-            }
-
-            @Test
             public void testGetViewMatrix() {
                 transform.setLocalPosition(new Vector3(1.0f, 2.0f, 3.0f));
                 transform.setLocalRotation(Quaternion.fromEuler(new Vector3(0.0f, (float) Math.toRadians(90.0f), 0.0f), Quaternion.RotationOrder.ZYX));
@@ -245,6 +232,7 @@ public class VisualizationTest {
 
             final EngineEntity cameraEntity = new EngineEntity();
             cameraEntity.addComponent(new Camera());
+            cameraEntity.addComponent(new CameraController());
 
             final EngineEntity modelEntity = new EngineEntity();
             modelEntity.addComponent(new MeshFilter(vertices, uvs, indices));
@@ -253,8 +241,11 @@ public class VisualizationTest {
             cameraEntity.getComponents().forEach(Component::start);
             modelEntity.getComponents().forEach(Component::start);
 
+            final Transform transform = (Transform) cameraEntity.getComponent(Transform.class);
+            transform.setLocalPosition(new Vector3(0.0f, 0.0f, -3.0f));
+
             renderer.setCamera((Camera) cameraEntity.getComponent(Camera.class));
-            renderer.setRenderer(List.of((MeshRenderer) modelEntity.getComponent(MeshRenderer.class)));
+            renderer.setRenderer(List.of((Renderer) modelEntity.getComponent(MeshRenderer.class)));
             renderer.render();
 
             final ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(WINDOW_WIDTH * WINDOW_HEIGHT * 4);

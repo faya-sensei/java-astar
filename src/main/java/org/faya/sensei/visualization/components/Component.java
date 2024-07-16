@@ -8,10 +8,20 @@ public abstract class Component {
 
     // Getter and setter
 
+    /**
+     * Get the entity where the component attached to.
+     *
+     * @return The entity.
+     */
     public EngineEntity getEntity() {
         return entity;
     }
 
+    /**
+     * Set the entity where the component attached to.
+     *
+     * @param entity The entity.
+     */
     public void setEntity(final EngineEntity entity) {
         this.entity = entity;
     }
