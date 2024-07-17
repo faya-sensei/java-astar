@@ -15,8 +15,9 @@ Another old school java exercise
     - [Node and Decorator pattern](#1-node-and-decorator)
     - [Grid graph and Builder pattern](#2-grid-graph-and-builder)
     - [Heuristic and Strategy pattern](#3-heuristic-and-strategy)
-    - [Pathfinder and Observer pattern](#4-pathfinder-and-observer)
+    - [Pathfinder Iterator and Observer pattern](#4-pathfinder-iterator-and-observer)
     - [Mesh graph and Simple Stupid Funnel](#5-mesh-graph-and-simple-stupid-funnel)
+    - [Integrate into visualization engine](#6-integrate-into-visualization-engine)
 
 ## Overview
 
@@ -105,7 +106,7 @@ distance can better calculate Euclidean based graphs.
 
 At least one or more classes inherited the `IHeuristic` interface.
 
-### 4. Pathfinder and observer
+### 4. Pathfinder iterator and observer
 
 #### Instruction:
 
@@ -150,21 +151,24 @@ function a_star(start_node, goal_node, heuristic)
   return failure
 ```
 
-The algorithm serves as the core and is reusable. This allows for abstraction
-and application design patterns, resulting in more structured code. We consider
-using the Bridge Pattern. Additionally, we can apply the Observer Pattern,
-enabling observers to record and monitor the process by extending the algorithm.
+When implementing this algorithm, we can consider abstracting the logic and
+adding additional interfaces to make the code more robust. The Iterator and
+Observer Pattern are the best approach. Use iterator design pattern abstract
+the while loop and use Observer Pattern allowed code more flexible.
 
 #### Procedural:
 
-1. **Implement pathfinder**: Implement `IPathfinder` interface and consider
-   PriorityQueue $O(n^2)$ or TreeSet $O(log_n)$ to achieve filtering and sorting,
-   mark it as abstract and build interface for the subclass.
+1. **Implement pathfinder iterator**: Implement `IPathfinderIterator` interface
+   and consider PriorityQueue $O(n^2)$ or TreeSet $O(log_n)$ to achieve
+   filtering and sorting.
 
-2. **Implement pathfinder subject**: Implement the subclass of pathfinder
+2. **Implement pathfinder**: Handle the abstract iterator by abstract implement
+   extend the `IPathfinder` interface.
+
+3. **Implement pathfinder subject**: Implement the subclass of pathfinder
    serve as concrete subject for observer.
 
-3. **Check observer can register into pathfinder subject**: Implement
+4**Check observer can register into pathfinder subject**: Implement
    `IPathfinderObserver` interface and try call register observer in pathfinder.
 
 ### 5. Mesh graph and Simple Stupid Funnel
@@ -225,3 +229,60 @@ function funnel_algorithm(path)
 
 2. **Implement simple stupid funnel**: Implement the funnel algorithm based on
    pseudocode.
+
+### 6. Integrate into visualization engine
+
+#### Instruction:
+
+For a project, it is important to embed your own code into other people's code.
+Try to analyze the design pattern of the engine and use a reasonable solution to
+insert your code into it.
+
+#### Procedural:
+
+1. Try to run the engine, here is an example code:
+    ```java
+    private static void Renderer() {
+        try (final InputStream inputStream = MethodHandles.lookup().lookupClass().getClassLoader().getResourceAsStream("navmesh.glb")) {
+
+            final Path tempFile = Files.createTempFile("tempNavmesh", ".gltf");
+            Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+            try (final AIScene scene = Assimp.aiImportFile(tempFile.toString(),
+                    Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate)) {
+
+                try (final AIMesh mesh = AIMesh.create(Objects.requireNonNull(scene.mMeshes()).get(0))) {
+                    final Engine engine = new EngineBuilder()
+                            .window(new Window("Visualization", 800, 600))
+                            .scene(
+                                    new EngineBuilder.EngineSceneBuilder()
+                                            .addEntity(
+                                                    new EngineBuilder.EngineEntityBuilder()
+                                                            .addComponent(new Camera())
+                                                            .addComponent(new CameraController())
+                                            )
+                                            .addEntity(
+                                                    new EngineBuilder.EngineEntityBuilder()
+                                                            .addComponent(new MeshFilter(mesh))
+                                                            .addComponent(new MeshRenderer(new Shader(
+                                                                    List.of(
+                                                                            new Shader.ShaderModuleData("shaders/vertex.glsl", GL_VERTEX_SHADER),
+                                                                            new Shader.ShaderModuleData("shaders/fragment.glsl", GL_FRAGMENT_SHADER)
+                                                                    )
+                                                            )))
+                                            )
+                            )
+                            .build();
+
+                    engine.start();
+                }
+            } finally {
+                Files.deleteIfExists(tempFile);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    ```
+
+2. Design your own component and integrate into the engine.
