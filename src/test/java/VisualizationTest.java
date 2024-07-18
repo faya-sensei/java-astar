@@ -362,11 +362,11 @@ public class VisualizationTest {
 
                 shader.init();
 
-                mockedGL.when(() -> GL20.glGetUniformLocation(1, "uColor")).thenReturn(mockUniformLocation);
+                mockedGL.when(() -> GL20.glGetUniformLocation(1, "color")).thenReturn(mockUniformLocation);
 
-                shaderSystem.registerGlobalUniform("uColor");
-                shader.registerUniform("uColor");
-                shaderSystem.setUniform("uColor", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                shaderSystem.registerGlobalUniform("color");
+                shader.registerUniform("color");
+                shaderSystem.setUniform("color", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
                 mockedGL.verify(() -> GL20.glCreateShader(GL_VERTEX_SHADER));
                 mockedGL.verify(() -> GL20.glCreateShader(GL_FRAGMENT_SHADER));
@@ -397,8 +397,8 @@ public class VisualizationTest {
             try {
                 shader.init();
 
-                shaderSystem.registerGlobalUniform("uColor");
-                shader.registerUniform("uColor");
+                shaderSystem.registerGlobalUniform("color");
+                shader.registerUniform("color");
 
                 final float[] vertices = {
                          0.0f,  0.5f, 0.0f,   // Top vertex
@@ -419,7 +419,7 @@ public class VisualizationTest {
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                shaderSystem.setUniform("uColor", new Vector4(TRIANGLE_COLOR[0] / 255.0f, TRIANGLE_COLOR[1] / 255.0f, TRIANGLE_COLOR[2] / 255.0f, TRIANGLE_COLOR[3] / 255.0f));
+                shaderSystem.setUniform("color", new Vector4(TRIANGLE_COLOR[0] / 255.0f, TRIANGLE_COLOR[1] / 255.0f, TRIANGLE_COLOR[2] / 255.0f, TRIANGLE_COLOR[3] / 255.0f));
 
                 shader.useProgram();
 

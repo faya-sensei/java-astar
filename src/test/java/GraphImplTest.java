@@ -381,6 +381,14 @@ public class GraphImplTest {
 
             assertNotNull(graphBuilder);
 
+            //  6----5----7
+            //  |  / |  / |
+            //  | /  | /  |
+            //  4----2----0
+            //  |  / |  / |
+            //  | /  | /  |
+            //  3----1----8
+
             try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("plane.glb")) {
                 assertNotNull(inputStream);
 
@@ -404,9 +412,9 @@ public class GraphImplTest {
 
         @Test
         public void testGetNode() {
-            final INode node = graph.getNode(0);
+            final INode node = graph.getNode(2);
 
-            assertArrayEquals(new double[]{0, 0, 0.5}, node.getPosition(), 1e-6);
+            assertArrayEquals(new double[]{0.0, 0.0, 0.0}, node.getPosition(), 1e-6);
         }
 
         @Test
@@ -427,10 +435,18 @@ public class GraphImplTest {
 
         @Test
         public void testGetNeighbors() {
-            final INode node = graph.getNode(0);
+            final INode node = graph.getNode(2);
             final List<INode> neighbors = graph.getNeighbors(node);
 
-            assertEquals(12, neighbors.size());
+            assertEquals(6, neighbors.size());
+        }
+
+        @Test
+        public void testGetNeighbors_EdgeCase() {
+            final INode node = graph.getNode(8);
+            final List<INode> neighbors = graph.getNeighbors(node);
+
+            assertEquals(2, neighbors.size());
         }
     }
 }
