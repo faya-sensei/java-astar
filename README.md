@@ -266,8 +266,8 @@ insert your code into it.
                                                             .addComponent(new MeshFilter(mesh))
                                                             .addComponent(new MeshRenderer(new Shader(
                                                                     List.of(
-                                                                            new Shader.ShaderModuleData("shaders/vertex.glsl", GL_VERTEX_SHADER),
-                                                                            new Shader.ShaderModuleData("shaders/fragment.glsl", GL_FRAGMENT_SHADER)
+                                                                            new Shader.ShaderModuleData("shaders/mesh-vertex.glsl", GL_VERTEX_SHADER),
+                                                                            new Shader.ShaderModuleData("shaders/mesh-fragment.glsl", GL_FRAGMENT_SHADER)
                                                                     )
                                                             )))
                                             )

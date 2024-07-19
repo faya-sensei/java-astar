@@ -15,8 +15,19 @@ public class LineRenderer extends Renderer {
     private int vaoId;
     private int vboId;
 
+    private float lineWidth = 0.05f;
+    private Vector4 color = new Vector4(0.75f, 0.75f, 0.75f, 1.0f);
+
     public LineRenderer(Shader shader) {
         super(shader);
+    }
+
+    public void setLineWidth(float width) {
+        this.lineWidth = width;
+    }
+
+    public void setColor(Vector4 color) {
+        this.color = color;
     }
 
     /** @inheritDoc */
@@ -52,8 +63,8 @@ public class LineRenderer extends Renderer {
     public void render() {
         shader.useProgram();
 
-        shader.setUniform("lineWidth", 0.1f);
-        shader.setUniform("color", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+        shader.setUniform("lineWidth", lineWidth);
+        shader.setUniform("color", color);
 
         glBindVertexArray(vaoId);
         glDrawArrays(GL_LINES, 0, vertices.size());

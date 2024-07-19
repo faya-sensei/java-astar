@@ -8,25 +8,17 @@ uniform mat4 viewMatrix;
 uniform float lineWidth;
 
 void main() {
-    vec3 p0 = gl_in[0].gl_Position.xyz;
-    vec3 p1 = gl_in[1].gl_Position.xyz;
+    vec4 p0 = viewMatrix * vec4(gl_in[0].gl_Position.xyz, 1.0);
+    vec4 p1 = viewMatrix * vec4(gl_in[1].gl_Position.xyz, 1.0);
 
-    vec3 cameraRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-    vec3 lineDir = normalize(p1 - p0);
-    vec3 offset = normalize(cross(lineDir, cameraRight)) * lineWidth * 0.5;
+    vec3 lineDir = normalize(p1.xyz - p0.xyz);
+    vec3 offset = normalize(cross(vec3(0.0, 0.0, 1.0), lineDir)) * lineWidth * 0.5;
 
-    // Generate the four corners of the thick line (as a quad)
-    gl_Position = projectionMatrix * viewMatrix * vec4(p0 + offset, 1.0);
-    EmitVertex();
-
-    gl_Position = projectionMatrix * viewMatrix * vec4(p0 - offset, 1.0);
-    EmitVertex();
-
-    gl_Position = projectionMatrix * viewMatrix * vec4(p1 + offset, 1.0);
-    EmitVertex();
-
-    gl_Position = projectionMatrix * viewMatrix * vec4(p1 - offset, 1.0);
-    EmitVertex();
+    for (int i = 0; i < 2; ++i) {
+        vec4 o = vec4(offset * (i == 0 ? 1.0 : -1.0), 0.0);
+        gl_Position = projectionMatrix * (p0 + o); EmitVertex();
+        gl_Position = projectionMatrix * (p1 + o); EmitVertex();
+    }
 
     EndPrimitive();
 }
