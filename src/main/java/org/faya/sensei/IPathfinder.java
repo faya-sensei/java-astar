@@ -24,14 +24,14 @@ public interface IPathfinder {
     /**
      * On search node callback, trigger when access to a node.
      *
-     * @param node The access node.
+     * @param node the access node.
      */
     void onNode(INode node);
 
     /**
      * On search finish callback, trigger when search success or failure.
      *
-     * @param path The path of this search.
+     * @param path the path of this search.
      */
     void onFinish(List<INode> path);
 }

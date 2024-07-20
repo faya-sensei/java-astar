@@ -30,5 +30,17 @@ public interface IGraph {
      * @param node the node for which neighbors are to be found.
      * @return a list of neighboring nodes.
      */
-    List<INode> getNeighbors(final INode node);
+    default List<INode> getNeighbors(final INode node) {
+        return List.of();
+    }
+
+    /**
+     * Retrieves the linked edges of a given node.
+     *
+     * @param node the node for which edges are to be found.
+     * @return a list of linked edges.
+     */
+    default List<IEdge> getEdges(final INode node) {
+        return List.of();
+    }
 }
