@@ -16,13 +16,6 @@ public interface IEdge {
      */
     INode getDestination();
 
-    /**
-     * Retrieves the cost of the edge.
-     *
-     * @return the cost of the edge
-     */
-    double getCost();
-
     abstract class Decorator implements IEdge {
 
         protected final IEdge decoratedEdge;
@@ -39,11 +32,6 @@ public interface IEdge {
         @Override
         public INode getDestination() {
             return decoratedEdge.getDestination();
-        }
-
-        @Override
-        public double getCost() {
-            return decoratedEdge.getCost();
         }
     }
 }
