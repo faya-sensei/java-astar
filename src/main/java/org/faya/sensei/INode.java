@@ -5,21 +5,21 @@ public interface INode {
     /**
      * Retrieves the position of the node.
      *
-     * @return the position of the node as a double array
+     * @return The position of the node as a double array.
      */
     double[] getPosition();
 
     /**
      * Retrieves the cost from the start node to the current node (G cost).
      *
-     * @return the G cost of the node
+     * @return The G cost of the node.
      */
     double getGCost();
 
     /**
      * Sets the cost from the start node to the current node (G cost).
      *
-     * @param gCost the G cost to be set
+     * @param gCost The G cost to be set.
      */
     void setGCost(final double gCost);
 
@@ -27,14 +27,14 @@ public interface INode {
      * Retrieves the heuristic cost estimate from the current node to the target
      * node.
      *
-     * @return the H cost of the node
+     * @return The H cost of the node.
      */
     double getHCost();
 
     /**
      * Sets the heuristic cost estimate from the current node to the target node.
      *
-     * @param hCost the H cost to be set
+     * @param hCost The H cost to be set.
      */
     void setHCost(final double hCost);
 
@@ -42,21 +42,21 @@ public interface INode {
      * Retrieves the F cost of the node, is used to determine the priority of
      * the node.
      *
-     * @return the F cost of the node
+     * @return The F cost of the node.
      */
     double getFCost();
 
     /**
      * Retrieves the parent node of this node.
      *
-     * @return the parent node, or null if this node has no parent
+     * @return The parent node, or null if this node has no parent.
      */
     INode getParent();
 
     /**
      * Sets the parent node of this node.
      *
-     * @param parent the parent node to be set
+     * @param parent The parent node to be set.
      */
     void setParent(final INode parent);
 

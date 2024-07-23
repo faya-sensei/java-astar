@@ -5,14 +5,14 @@ public interface IEdge {
     /**
      * Retrieves the source node.
      *
-     * @return the source node
+     * @return The source node.
      */
     INode getSource();
 
     /**
      * Retrieves the destination node.
      *
-     * @return the destination node
+     * @return The destination node.
      */
     INode getDestination();
 
