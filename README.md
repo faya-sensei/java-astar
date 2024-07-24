@@ -25,6 +25,8 @@ The A* algorithm is a fundamental programming algorithm that aids in practicing
 iteration and fostering programming thinking. It is also a practical algorithm
 widely used in real-world applications.
 
+![Final Effect](preview.gif)
+
 ## Task Checklist
 
 ### 1. Node and decorator
