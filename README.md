@@ -25,7 +25,7 @@ The A* algorithm is a fundamental programming algorithm that aids in practicing
 iteration and fostering programming thinking. It is also a practical algorithm
 widely used in real-world applications.
 
-![Final Effect](preview.gif)
+![Final Effect](docs/preview.gif)
 
 ## Task Checklist
 
@@ -170,7 +170,7 @@ the while loop and use Observer Pattern allowed code more flexible.
 3. **Implement pathfinder subject**: Implement the subclass of pathfinder
    serve as concrete subject for observer.
 
-4**Check observer can register into pathfinder subject**: Implement
+4. **Check observer can register into pathfinder subject**: Implement
    `IPathfinderObserver` interface and try call register observer in pathfinder.
 
 ### 5. Mesh graph and Simple Stupid Funnel
